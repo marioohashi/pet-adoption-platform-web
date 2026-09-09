@@ -7,7 +7,7 @@ export const api = axios.create({
   },
 });
 
-// Injeta o token JWT armazenado em todas as requisições
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('pet_adoption_token');
   if (token && config.headers) {

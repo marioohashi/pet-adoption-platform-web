@@ -1,4 +1,3 @@
-// src/components/Hero.tsx
 export function Hero() {
   return (
     <section className="bg-gradient-to-r from-blue-600 to-blue-400 text-white py-20">

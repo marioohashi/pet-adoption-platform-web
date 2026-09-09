@@ -1,4 +1,3 @@
-// src/components/PetListCard.tsx
 import { useState } from "react";
 import type {Pet} from "../types"
 

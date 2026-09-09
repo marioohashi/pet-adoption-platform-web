@@ -12,10 +12,12 @@
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",
     "axios": "^1.19.0",
+    "clsx": "^2.1.1",
     "lucide-react": "^1.33.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.2",
+    "tailwind-merge": "^3.6.0",
     "zod": "^4.4.3",
     "zustand": "^5.0.15"
   },
@@ -27,7 +29,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
     "autoprefixer": "^10.5.4",
-    "eslint": "^10.8.0",
+    "eslint": "^10.8.1",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.3",
     "globals": "^17.7.0",
