@@ -3,20 +3,21 @@ import { useState } from "react";
 import { getPets } from "../services/petService";
 import { PetListCard } from "./PetListCard";
 import { Pagination } from "./Pagination";
+import { type Pet, type PetsResponse, Species, PetSize, PetSex } from "../types";
 
 const PER_PAGE = 9;
 
 export function PetList() {
   const [filters, setFilters] = useState({
-    species: "",
-    size: "",
-    sex: "",
+    species: "" as Species | "",
+    size: "" as PetSize | "",
+    sex: "" as PetSex | "",
     age: "",
   });
 
   const [page, setPage] = useState(1);
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError } = useQuery<PetsResponse>({
     queryKey: ["pets", filters, page],
     queryFn: () =>
       getPets({
@@ -25,7 +26,6 @@ export function PetList() {
         ...filters,
       }),
     placeholderData: (prev) => prev,
-    keepPreviousData: true,
   });
 
   const pets = data?.animals ?? [];
@@ -77,8 +77,9 @@ export function PetList() {
             className="border p-2 rounded"
           >
             <option value="">Espécie</option>
-            <option value="dog">Cachorro</option>
-            <option value="cat">Gato</option>
+            <option value={Species.DOG}>Cachorro</option>
+            <option value={Species.CAT}>Gato</option>
+            <option value={Species.OTHER}>Outros</option>
           </select>
 
           <select
@@ -88,9 +89,9 @@ export function PetList() {
             className="border p-2 rounded"
           >
             <option value="">Tamanho</option>
-            <option value="small">Pequeno</option>
-            <option value="medium">Médio</option>
-            <option value="large">Grande</option>
+            <option value={PetSize.SMALL}>Pequeno</option>
+            <option value={PetSize.MEDIUM}>Médio</option>
+            <option value={PetSize.LARGE}>Grande</option>
           </select>
 
           <select
@@ -100,8 +101,8 @@ export function PetList() {
             className="border p-2 rounded"
           >
             <option value="">Sexo</option>
-            <option value="male">Macho</option>
-            <option value="female">Fêmea</option>
+            <option value={PetSex.MALE}>Macho</option>
+            <option value={PetSex.FEMALE}>Fêmea</option>
           </select>
 
           <select
@@ -126,14 +127,12 @@ export function PetList() {
         </div>
       </div>
 
-      {/* Lista */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {pets.map((pet) => (
+        {pets.map((pet: Pet) => (
           <PetListCard key={pet.id} pet={pet} />
         ))}
       </div>
 
-      {/* Paginação */}
       <Pagination
         current={page}
         total={totalPages}
