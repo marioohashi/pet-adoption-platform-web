@@ -1,7 +1,5 @@
-import { useEffect, useState } from "react"
-import { createContext, ReactNode } from "react";
+import { createContext, useEffect, useState, type ReactNode } from "react"
 import { api } from "../services/api"
-
 
 type UserAPIResponse = {
     token: string
@@ -24,37 +22,29 @@ const LOCAL_STORAGE_KEY = "pet_adoption"
 
 export const AuthContext = createContext({} as AuthContext)
 
-
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [session, setSession] = useState<null | UserAPIResponse>(null)
     const [isLoading, setIsLoading] = useState(true)
 
-    // function save(data: UserAPIResponse) {
-
-    //     localStorage.setItem(`${LOCAL_STORAGE_KEY}:user`, JSON.stringify(data.user))
-    //     localStorage.setItem(`${LOCAL_STORAGE_KEY}:token`, data.token)
-    //     api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`
-    //     setSession(data)
-    // }
-
     function save(data: UserAPIResponse) {
-        localStorage.setItem("pet_adoption_user", JSON.stringify(data.user))
-        localStorage.setItem("pet_adoption_token", data.token)
+        localStorage.setItem(`${LOCAL_STORAGE_KEY}_user`, JSON.stringify(data.user))
+        localStorage.setItem(`${LOCAL_STORAGE_KEY}_token`, data.token)
 
         api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`
 
         setSession(data)
     }
+
     function remove() {
         setSession(null)
-        localStorage.removeItem("pet_adoption_user")
-        localStorage.removeItem("pet_adoption_token")
+        localStorage.removeItem(`${LOCAL_STORAGE_KEY}_user`)
+        localStorage.removeItem(`${LOCAL_STORAGE_KEY}_token`)
         window.location.assign("/")
-
     }
+
     function loadUser() {
-        const user = localStorage.getItem("pet_adoption_user")
-        const token = localStorage.getItem("pet_adoption_token")
+        const user = localStorage.getItem(`${LOCAL_STORAGE_KEY}_user`)
+        const token = localStorage.getItem(`${LOCAL_STORAGE_KEY}_token`)
 
         if (token && user) {
             api.defaults.headers.common["Authorization"] = `Bearer ${token}`
@@ -63,9 +53,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setIsLoading(false)
     }
+
     useEffect(() => {
         loadUser()
     }, [])
+
     return (
         <AuthContext.Provider value={{ session, save, isLoading, remove }}>
             {children}
