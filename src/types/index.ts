@@ -1,4 +1,38 @@
-export type UserRole = 'ADMIN' | 'USER';
+// ==========================================
+// Enums
+// ==========================================
+
+export enum UserRole {
+  ADMIN = "admin",
+  USER = "user",
+}
+
+export enum Species {
+  CAT = "cat",
+  DOG = "dog",
+  OTHER = "other",
+}
+
+export enum PetStatus {
+  AVAILABLE = "available",
+  IN_PROCESS = "in_process",
+  ADOPTED = "adopted",
+}
+
+export enum PetSize {
+  SMALL = "small",
+  MEDIUM = "medium",
+  LARGE = "large",
+}
+
+export enum PetSex {
+  MALE = "male",
+  FEMALE = "female",
+}
+
+// ==========================================
+// Tipos de Usuário
+// ==========================================
 
 export interface User {
   id: string;
@@ -9,9 +43,9 @@ export interface User {
   bio?: string | null;
   city?: string | null;
   state?: string | null;
-  role?: UserRole;
-  createdAt?: string;
-  updatedAt?: string;
+  role: UserRole;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AuthResponse {
@@ -23,32 +57,57 @@ export interface AuthResponse {
 // Tipos de Animais (Pet)
 // ==========================================
 
-export type PetStatus = 'available' | 'in_process' | 'adopted';
-
 export interface Pet {
   id: string;
   name: string;
-  species: string;
+  species: Species;
   breed?: string | null;
   age?: number | null;
-  size?: string | null;
-  sex?: string | null;
+  size?: PetSize | null;
+  sex?: PetSex | null;
   description?: string | null;
-  status: PetStatus | string;
+  status: PetStatus;
   photo?: string | null;
   userId: string;
   user?: User;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }
+
+// ==========================================
+// Inputs
+// ==========================================
 
 export interface CreatePetInput {
   name: string;
-  species: string;
+  species: Species;
   breed?: string;
   age?: number;
-  size?: string;
-  sex?: string;
+  size?: PetSize;
+  sex?: PetSex;
   description?: string;
   photo?: string;
+}
+
+// ==========================================
+// Paginação
+// ==========================================
+
+export interface Pagination {
+  page: number;
+  perPage: number;
+  totalRecords: number;
+  totalPages: number;
+}
+
+export interface PetsResponse {
+  animals: Pet[];
+  pagination: Pagination;
+}
+
+export interface PetFilters {
+  species?: Species;
+  size?: PetSize;
+  sex?: PetSex;
+  age?: string; // "0-2", "3-6", etc.
 }
