@@ -26,9 +26,8 @@ function fileToBase64(file: File): Promise<string> {
 const createPetSchema = z.object({
     name: z.string().trim().min(2, "Informe o nome do pet (mínimo 2 caracteres)"),
     species: z.enum(["dog", "cat", "other"], {
-        errorMap: () => ({ message: "Selecione uma espécie válida" }),
-    }),
-    breed: z.string().optional(),
+        message: "Selecione uma espécie válida",
+    }), breed: z.string().optional(),
     age: z.coerce.number().min(0, "Idade não pode ser negativa").optional(),
     size: z.string().optional(),
     sex: z.string().optional(),
