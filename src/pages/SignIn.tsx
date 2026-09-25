@@ -1,95 +1,109 @@
-import { useActionState } from "react";
-import { z, ZodError } from "zod"
-import { AxiosError } from "axios"
-import { useNavigate } from "react-router-dom"
+import { useState } from "react";
+import { z, ZodError } from "zod";
+import { AxiosError } from "axios";
+import { useNavigate, Link } from "react-router-dom";
 
-import { api } from "../services/api"
-import { useAuth } from "../hooks/useAuth"
+import { api } from "../services/api";
+import { useAuth } from "../hooks/useAuth";
 
 import { Button } from "../components/Button";
 import { Input } from "../components/Input";
 
-const signInScheme = z.object({
-  email: z.string().email({ message: "Invalid email" }),
-  password: z.string().trim().min(1, { message: "Inform password" })
-})
+const signInSchema = z.object({
+  email: z.string().email({ message: "Insira um e-mail válido" }),
+  password: z.string().min(1, { message: "Informe sua senha" }),
+});
 
 export function SignIn() {
-  const navigate = useNavigate()
-  const [state, formAction, isLoading] = useActionState(signIn, null)
-  const auth = useAuth()
+  const navigate = useNavigate();
+  const auth = useAuth();
 
-  async function signIn(_: any, formData: FormData) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setErrorMessage(null);
+
     try {
-      const data = signInScheme.parse({
-        email: formData.get("email"),
-        password: formData.get("password"),
-      })
+      setIsLoading(true);
+      const data = signInSchema.parse({ email, password });
 
-      const response = await api.post("/sessions", data)
-      auth.save(response.data)
+      const response = await api.post("/sessions", data);
+      auth.save(response.data);
 
-      navigate("/")
-
+      navigate("/");
     } catch (error) {
-      console.log(error)
+      console.error(error);
 
       if (error instanceof ZodError) {
-        return {
-          error: "validation",
-          issues: error.issues.map(issue => issue.message),
-          email: String(formData.get("email") ?? ""),
-          password: String(formData.get("password") ?? "")
-        }
+        setErrorMessage(error.issues[0].message);
+      } else if (error instanceof AxiosError) {
+        setErrorMessage(
+          error.response?.data?.message || "E-mail ou senha incorretos."
+        );
+      } else {
+        setErrorMessage("Ocorreu um erro inesperado. Tente novamente.");
       }
-
-      if (error instanceof AxiosError) {
-        return {
-          error: "request",
-          message: error.response?.data?.message ?? "Unexpected server error",
-          email: String(formData.get("email") ?? ""),
-          password: String(formData.get("password") ?? "")
-        }
-      }
-
-      return {
-        error: "unknown",
-        message: "Something went wrong",
-        email: String(formData.get("email") ?? ""),
-        password: String(formData.get("password") ?? "")
-      }
+    } finally {
+      setIsLoading(false);
     }
   }
 
   return (
-    <form action={formAction} className="w-full flex flex-col gap-4">
-      <Input
-        name="email"
-        required
-        legend="E-mail"
-        type="email"
-        placeholder="seu@email.com"
-        defaultValue={String(state?.email)}
-      />
-      <Input
-        name="password"
-        required
-        legend="Senha"
-        type="password"
-        placeholder="123456"
-        defaultValue={String(state?.password)}
-      />
+    <div className="w-full">
+      <header className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-white mb-1">Acesse sua conta</h2>
+        <p className="text-sm text-gray-300">
+          Entre com seu e-mail e senha para continuar
+        </p>
+      </header>
 
-      <Button type="submit" isLoading={isLoading}>
-        Entrar
-      </Button>
+      {errorMessage && (
+        <div className="bg-red-500/15 border border-red-500/30 text-red-200 text-sm p-3 rounded-lg mb-4 text-center">
+          {errorMessage}
+        </div>
+      )}
 
-      <a
-        href="/signup"
-        className="text-sm font-semibold text-gray-100 mt-10 mb-4 text-center hover:text-green-800 transition ease-linear"
-      >
-        Criar conta
-      </a>
-    </form>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <Input
+          name="email"
+          required
+          legend="E-mail"
+          type="email"
+          placeholder="seu@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <Input
+          name="password"
+          required
+          legend="Senha"
+          type="password"
+          placeholder="••••••••"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+        <Button type="submit" isLoading={isLoading} className="mt-2 bg-amber-500">
+          Entrar
+        </Button>
+      </form>
+
+      <div className="mt-8 pt-6 border-t border-gray-600/50 text-center">
+        <p className="text-sm text-gray-300">
+          Ainda não tem uma conta?{" "}
+          <Link
+            to="/signup"
+            className="font-semibold text-amber-400 hover:text-amber-300 transition"
+          >
+            Cadastre-se
+          </Link>
+        </p>
+      </div>
+    </div>
   );
 }
