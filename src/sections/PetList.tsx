@@ -1,10 +1,10 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useState } from "react";
 import { getPets } from "../services/petService";
-import { PetListCard } from "./PetListCard";
-import { PetDetailModal } from "./PetDetailModal";
-import { AuthModal } from "./AuthModal";
-import { Pagination } from "./Pagination";
+import { PetListCard } from "../components./sections/PetListCard";
+import { PetDetailModal } from "../modals/PetDetailModal";
+import { AuthModal } from "../modals/AuthModal";
+import { Pagination } from "../components/Pagination";
 import { type Pet, type PetsResponse, Species, PetSize, PetSex } from "../types";
 
 const PER_PAGE = 9;

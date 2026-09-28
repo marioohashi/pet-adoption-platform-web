@@ -2,9 +2,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { getMyPets, deletePet } from "../services/petService";
 import { PetListCard } from "./PetListCard";
-import { PetDetailModal } from "./PetDetailModal";
-import { CreatePetModal } from "./CreatePetModal";
-import { ConfirmModal } from "./ConfirmModal"; // 🟢 1. Importa o ConfirmModal
+import { PetDetailModal } from "../modals/PetDetailModal";
+import { CreatePetModal } from "../components/CreatePetModal";
+import { ConfirmModal } from "../components/ConfirmModal"; // 🟢 1. Importa o ConfirmModal
 import { FaPlus, FaPaw } from "react-icons/fa6";
 import type { Pet } from "../types";
 

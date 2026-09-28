@@ -1,4 +1,4 @@
-import { MyPetsList } from "../components/MyPetsList";
+import { MyPetsList } from "../sections/MyPetsList";
 
 export function MyPets() {
     return (

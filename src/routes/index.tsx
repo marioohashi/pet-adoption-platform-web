@@ -1,15 +1,15 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import { AppLayout } from "../components/AppLayout";
-import { ProtectedRoute } from "../components/ProtectedRoute";
+import { AppLayout } from "../layouts/AppLayout";
+import { ProtectedRoute } from "../layouts/ProtectedRoute";
 
-import { PetList } from "../components/PetList";
-import { MyPetsList } from "../components/MyPetsList";
-import { NGOsList } from "../components/NGOsList"
-import { VetsList } from "../components/VetList"
-import { LostPets } from "../components/LostPets"
+import { PetList } from "../sections/PetList";
+import { MyPetsList } from "../sections/MyPetsList";
+import { NGOsList } from "../sections/NGOsList"
+import { VetsList } from "../sections/VetList"
+import { LostPets } from "../sections/LostPets"
 
-const NewPetPage = () => <div className="p-4 text-white">Anunciar Pet</div>;
+import { NotFound } from "../pages/NotFound"
 
 export function AppRoutes() {
     return (
@@ -29,7 +29,7 @@ export function AppRoutes() {
 
                 </Route>
 
-                <Route path="*" element={<Navigate to="/pets" replace />} />
+                <Route path="*" element={<NotFound />} />
             </Routes>
         </BrowserRouter>
     );

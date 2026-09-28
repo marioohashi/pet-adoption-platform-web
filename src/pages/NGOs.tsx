@@ -1,4 +1,4 @@
-import { NGOsList } from "../components/NGOsList";
+import { NGOsList } from "../sections/NGOsList";
 
 export function NGOs() {
     return (
