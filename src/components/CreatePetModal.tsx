@@ -40,9 +40,8 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
     const [sex, setSex] = useState("");
     const [description, setDescription] = useState("");
 
-    // Armazena as URLs das fotos ou arquivos selecionados localmente
     const [photos, setPhotos] = useState<string[]>([]);
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([]); // Para arquivos novos
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -109,7 +108,6 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
         onClose();
     }
 
-    // 🟢 Acumula os arquivos reais selecionados para upload posterior
     function handleAddPhotos(e: React.ChangeEvent<HTMLInputElement>) {
         const files = Array.from(e.target.files || []);
         if (files.length === 0) return;
@@ -117,7 +115,6 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
         const maxAvailableSlots = 5 - (photos.length + selectedFiles.length);
         const filesToAdd = files.slice(0, maxAvailableSlots);
 
-        // Cria previews locais imediatos para o usuário ver
         const newPreviews = filesToAdd.map((file) => URL.createObjectURL(file));
 
         setSelectedFiles((prev) => [...prev, ...filesToAdd]);
@@ -126,7 +123,6 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
 
     function handleRemovePhoto(indexToRemove: number) {
         setPhotos((prev) => prev.filter((_, idx) => idx !== indexToRemove));
-        // Se for um arquivo novo pendente de upload, remove da lista de files também
         setSelectedFiles((prev) => prev.filter((_, idx) => idx !== indexToRemove));
     }
 
@@ -360,7 +356,6 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
                                 <label className="block text-xs font-medium text-gray-300 mb-1">Sexo</label>
                                 <select
                                     value={sex}
-                                    onChange={(e) => sex}
                                     onChange={(e) => setSex(e.target.value)}
                                     className="w-full bg-gray-900/60 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-gray-100 focus:outline-none focus:border-amber-500 transition"
                                 >
