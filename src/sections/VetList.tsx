@@ -3,18 +3,20 @@ import { FaPhone, FaLocationDot, FaClock, FaXmark, FaPlus, FaPenToSquare, FaTras
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
-import { ConfirmModal } from "../components/ConfirmModal";
-import { CreateVetModal } from "../components/CreateVetModal";
+import { ConfirmModal } from "../modals/ConfirmModal";
+import { CreateVetModal } from "../modals/CreateVetModal";
 
 interface VetPartner {
     id: string;
     name: string;
-    type: "Clinica" | "Veterinario";
-    image: string;
-    city: string;
+    type?: "Clinica" | "Veterinario";
+    image?: string;
+    avatarUrl: string;
+    crmv: string;
+    city?: string;
     phone: string;
     address: string;
-    hours: string;
+    hours?: string;
     specialty: string;
     description?: string | null;
 }
@@ -99,63 +101,66 @@ export function VetsList() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {vets.map((vet) => (
-                        <div
-                            key={vet.id}
-                            onClick={() => setSelectedVet(vet)}
-                            className="bg-gray-800 border border-gray-700/80 rounded-2xl overflow-hidden hover:border-amber-500/50 transition cursor-pointer flex flex-col group relative shadow-md hover:shadow-xl"
-                        >
-                            <div className="relative w-full aspect-[4/5] sm:aspect-square bg-gray-900 flex items-center justify-center overflow-hidden">
-                                <img
-                                    src={vet.image || "https://images.unsplash.com/photo-1584132967334-10e028bd69f7"}
-                                    alt={vet.name}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                />
-                                <div className="absolute top-3 left-3 z-10">
-                                    <span className="text-xs px-2.5 py-1 rounded-full bg-gray-950/70 backdrop-blur-md text-amber-400 font-medium border border-amber-500/30 shadow-sm">
-                                        {vet.type === "Clinica" ? "Clínica" : "Veterinário(a)"}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between gap-2">
-                                <div className="flex items-start justify-between gap-2">
-                                    <div>
-                                        <h3 className="text-base sm:text-lg font-bold text-white leading-snug group-hover:text-amber-400 transition-colors line-clamp-1">
-                                            {vet.name}
-                                        </h3>
-                                        <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">
-                                            {vet.specialty}
-                                        </p>
+                    {vets.map((vet) => {
+                        const avatarSrc = vet.avatarUrl || vet.image;
+                        return (
+                            <div
+                                key={vet.id}
+                                onClick={() => setSelectedVet(vet)}
+                                className="bg-gray-800 border border-gray-700/80 rounded-2xl overflow-hidden hover:border-amber-500/50 transition cursor-pointer flex flex-col group relative shadow-md hover:shadow-xl"
+                            >
+                                <div className="relative w-full aspect-[4/5] sm:aspect-square bg-gray-900 flex items-center justify-center overflow-hidden">
+                                    <img
+                                        src={avatarSrc || "https://images.unsplash.com/photo-1584132967334-10e028bd69f7"}
+                                        alt={vet.name}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    />
+                                    <div className="absolute top-3 left-3 z-10">
+                                        <span className="text-xs px-2.5 py-1 rounded-full bg-gray-950/70 backdrop-blur-md text-amber-400 font-medium border border-amber-500/30 shadow-sm">
+                                            {vet.type === "Clinica" ? "Clínica" : "Veterinário(a)"}
+                                        </span>
                                     </div>
+                                </div>
 
-                                    {isAdmin && (
-                                        <div className="flex items-center gap-1 shrink-0 z-10">
-                                            <button
-                                                type="button"
-                                                onClick={(e) => handleOpenEdit(vet, e)}
-                                                className="p-1.5 text-gray-400 hover:text-amber-400 hover:bg-gray-700/80 rounded-lg transition cursor-pointer"
-                                                title="Editar parceiro"
-                                            >
-                                                <FaPenToSquare className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setVetToDeleteId(vet.id);
-                                                }}
-                                                className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-gray-700/80 rounded-lg transition cursor-pointer"
-                                                title="Remover parceiro"
-                                            >
-                                                <FaTrash className="w-4 h-4" />
-                                            </button>
+                                <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between gap-2">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div>
+                                            <h3 className="text-base sm:text-lg font-bold text-white leading-snug group-hover:text-amber-400 transition-colors line-clamp-1">
+                                                {vet.name}
+                                            </h3>
+                                            <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">
+                                                {vet.specialty}
+                                            </p>
                                         </div>
-                                    )}
+
+                                        {isAdmin && (
+                                            <div className="flex items-center gap-1 shrink-0 z-10">
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => handleOpenEdit(vet, e)}
+                                                    className="p-1.5 text-gray-400 hover:text-amber-400 hover:bg-gray-700/80 rounded-lg transition cursor-pointer"
+                                                    title="Editar parceiro"
+                                                >
+                                                    <FaPenToSquare className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setVetToDeleteId(vet.id);
+                                                    }}
+                                                    className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-gray-700/80 rounded-lg transition cursor-pointer"
+                                                    title="Remover parceiro"
+                                                >
+                                                    <FaTrash className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
 
@@ -173,7 +178,7 @@ export function VetsList() {
                         </button>
 
                         <div className="relative w-full aspect-square bg-gray-900 rounded-2xl overflow-hidden shadow-inner">
-                            <img src={selectedVet.image} alt={selectedVet.name} className="w-full h-full object-cover" />
+                            <img src={selectedVet.avatarUrl || selectedVet.image} alt={selectedVet.name} className="w-full h-full object-cover" />
                         </div>
 
                         <div className="space-y-4">
@@ -182,9 +187,11 @@ export function VetsList() {
                                     <span className="text-xs font-semibold px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
                                         {selectedVet.type === "Clinica" ? "Clínica Veterinária" : "Profissional Autônomo"}
                                     </span>
-                                    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-gray-700/50 text-gray-300">
-                                        {selectedVet.city}
-                                    </span>
+                                    {selectedVet.city && (
+                                        <span className="text-xs font-semibold px-3 py-1 rounded-full bg-gray-700/50 text-gray-300">
+                                            {selectedVet.city}
+                                        </span>
+                                    )}
                                 </div>
                                 <h3 className="text-2xl font-bold text-white mt-2">{selectedVet.name}</h3>
                                 <p className="text-xs font-semibold text-amber-400 mt-1 uppercase tracking-wide">
@@ -208,12 +215,14 @@ export function VetsList() {
                                     </div>
                                     <span>{selectedVet.address}</span>
                                 </div>
-                                <div className="flex items-center gap-3 text-sm text-gray-200">
-                                    <div className="p-2 bg-amber-500/10 text-amber-400 rounded-lg shrink-0">
-                                        <FaClock className="w-4 h-4" />
+                                {selectedVet.hours && (
+                                    <div className="flex items-center gap-3 text-sm text-gray-200">
+                                        <div className="p-2 bg-amber-500/10 text-amber-400 rounded-lg shrink-0">
+                                            <FaClock className="w-4 h-4" />
+                                        </div>
+                                        <span>{selectedVet.hours}</span>
                                     </div>
-                                    <span>{selectedVet.hours}</span>
-                                </div>
+                                )}
                             </div>
                         </div>
 

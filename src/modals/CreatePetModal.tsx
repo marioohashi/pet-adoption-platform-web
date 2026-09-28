@@ -6,8 +6,8 @@ import { ZodError, z } from "zod";
 
 import { api } from "../services/api";
 import { uploadToCloudinary } from "../services/cloudinary"; // 🟢 Nosso helper do Cloudinary
-import { Input } from "./Input";
-import { Button } from "./Button";
+import { Input } from "../components/Input";
+import { Button } from "../components/Button";
 import { ConfirmModal } from "./ConfirmModal";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { Pet } from "../types/index";

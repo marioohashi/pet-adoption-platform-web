@@ -1,7 +1,7 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useState } from "react";
 import { getPets } from "../services/petService";
-import { PetListCard } from "../components./sections/PetListCard";
+import { PetListCard } from "../sections/PetListCard";
 import { PetDetailModal } from "../modals/PetDetailModal";
 import { AuthModal } from "../modals/AuthModal";
 import { Pagination } from "../components/Pagination";

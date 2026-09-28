@@ -3,8 +3,8 @@ import { FaPhone, FaGlobe, FaLocationDot, FaXmark, FaPlus, FaPenToSquare, FaTras
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
-import { CreateNgoModal } from "../components/CreateNgoModal";
-import { ConfirmModal } from "../components/ConfirmModal";
+import { CreateNgoModal } from "../modals/CreateNgoModal";
+import { ConfirmModal } from "../modals/ConfirmModal";
 
 interface NGO {
     id: string;

@@ -3,8 +3,8 @@ import { useState } from "react";
 import { getMyPets, deletePet } from "../services/petService";
 import { PetListCard } from "./PetListCard";
 import { PetDetailModal } from "../modals/PetDetailModal";
-import { CreatePetModal } from "../components/CreatePetModal";
-import { ConfirmModal } from "../components/ConfirmModal"; // 🟢 1. Importa o ConfirmModal
+import { CreatePetModal } from "../modals/CreatePetModal";
+import { ConfirmModal } from "../modals/ConfirmModal";
 import { FaPlus, FaPaw } from "react-icons/fa6";
 import type { Pet } from "../types";
 
@@ -14,16 +14,13 @@ export function MyPetsList() {
     const [editingPet, setEditingPet] = useState<Pet | null>(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-    // 🟢 2. Estado para controlar qual pet está na mira da exclusão
     const [petToDelete, setPetToDelete] = useState<Pet | null>(null);
 
-    // Busca apenas os pets cadastrados pelo usuário
     const { data: pets = [], isLoading, isError } = useQuery<Pet[]>({
         queryKey: ["my-pets"],
         queryFn: getMyPets,
     });
 
-    // Mutation para remover pet
     const deleteMutation = useMutation({
         mutationFn: (petId: string) => deletePet(petId),
         onSuccess: () => {
