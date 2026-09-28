@@ -22,6 +22,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return null
     })
 
+    const isAdmin = session?.user?.role === "admin"
+
     function save(data: UserAPIResponse) {
         localStorage.setItem(`${LOCAL_STORAGE_KEY}_user`, JSON.stringify(data.user))
         localStorage.setItem(`${LOCAL_STORAGE_KEY}_token`, data.token)
@@ -40,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return (
-        <AuthContext.Provider value={{ session, save, remove }}>
+        <AuthContext.Provider value={{ session, save, remove, isAdmin }}>
             {children}
         </AuthContext.Provider>
     )

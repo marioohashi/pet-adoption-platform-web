@@ -6,8 +6,8 @@ import { ZodError, z } from "zod";
 
 import { api } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
-import { Input } from "./Input";
-import { Button } from "./Button";
+import { Input } from "../components/Input";
+import { Button } from "../components/Button";
 
 interface AuthModalProps {
     isOpen: boolean;

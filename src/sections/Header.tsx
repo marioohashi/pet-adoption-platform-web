@@ -9,10 +9,11 @@ import {
   FaRightFromBracket,
   FaHeart,
   FaUser,
+  FaGear,
 } from "react-icons/fa6";
 import { useAuth } from "../hooks/useAuth";
-import { AuthModal } from "./AuthModal";
-import { CreatePetModal } from "./CreatePetModal";
+import { AuthModal } from "../modals/AuthModal";
+import { CreatePetModal } from "../modals/CreatePetModal";
 
 export function Header() {
   const { session, remove } = useAuth();
@@ -66,11 +67,11 @@ export function Header() {
             <nav className="hidden md:flex items-center gap-1">
               <NavLink to="/pets" className={navLinkClass}>
                 <FaHeart className="w-4 h-4" />
-                <span>Explorar</span>
+                <span>Adotar</span>
               </NavLink>
               <NavLink to="/perdidos" className={navLinkClass}>
                 <FaMagnifyingGlassLocation className="w-4 h-4" />
-                <span>Perdidos & Achados</span>
+                <span>Pets Perdidos</span>
               </NavLink>
               <NavLink to="/ongs" className={navLinkClass}>
                 <FaBuildingNgo className="w-4 h-4" />
@@ -98,13 +99,22 @@ export function Header() {
                     className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold px-3.5 py-2 rounded-lg text-sm transition shadow-sm hover:shadow-amber-500/20 cursor-pointer"
                   >
                     <FaPlus className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Anunciar Pet</span>
+                    <span className="hidden sm:inline">Adicionar Pet</span>
                   </button>
 
                   <div className="flex items-center gap-2 pl-2 border-l border-gray-700/60">
-                    <span className="text-xs text-gray-300 font-medium hidden lg:inline max-w-[120px] truncate">
-                      {session?.user?.name || "Usuário"}
-                    </span>
+                    {/* Link do nome do usuário e botão de configurações */}
+                    <NavLink
+                      to="/settings"
+                      title="Editar dados e configurações"
+                      className="flex items-center gap-1.5 text-xs text-gray-300 font-medium hover:text-amber-400 transition-colors group px-2 py-1 rounded-lg hover:bg-gray-700/50"
+                    >
+                      <span className="max-w-[100px] truncate">
+                        {session?.user?.name || "Usuário"}
+                      </span>
+                      <FaGear className="w-3.5 h-3.5 text-gray-400 group-hover:text-amber-400 group-hover:rotate-90 transition-all duration-300" />
+                    </NavLink>
+
                     <button
                       onClick={handleLogout}
                       title="Sair da conta"
@@ -133,7 +143,7 @@ export function Header() {
         <nav className="md:hidden flex items-center justify-between gap-1 py-2 px-4 border-t border-gray-700/40 text-xs overflow-x-auto">
           <NavLink to="/pets" className={navLinkClass}>Explorar</NavLink>
           <NavLink to="/perdidos" className={navLinkClass}>Perdidos</NavLink>
-          <NavLink to="/ongs" className={navLinkClass}>ONGs</NavLink>
+          <NavLink to="/ongs" className={navLinkClass}>OnGs</NavLink>
           <NavLink to="/clinicas" className={navLinkClass}>Clínicas</NavLink>
         </nav>
       </header>

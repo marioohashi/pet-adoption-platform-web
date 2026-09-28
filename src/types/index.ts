@@ -54,18 +54,16 @@ export interface AuthResponse {
 export interface Pet {
   id: string;
   name: string;
-  species: Species;
-  breed?: string | null;
-  age?: number | null;
-  size?: PetSize | null;
-  sex?: PetSex | null;
-  description?: string | null;
-  status: PetStatus;
-  photo?: string | null;
-  userId: string;
-  user?: User;
-  createdAt: string;
-  updatedAt: string;
+  species: string;
+  breed?: string;
+  age?: number;
+  size?: string;
+  sex?: string;
+  description?: string;
+  photos?: string[]; // 🟢 Lista de fotos da galeria
+  photo?: string;    // Foto principal
+  status?: string;
+  createdAt?: string;
 }
 
 export interface CreatePetInput {

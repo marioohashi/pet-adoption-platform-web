@@ -1,8 +1,8 @@
 // src/pages/Home.tsx
-import { Header } from "../components/Header";
-import { Hero } from "../components/Hero";
-import { PetList } from "../components/PetList";
-import { Footer } from "../components/Footer";
+import { Header } from "../sections/Header";
+import { Hero } from "../sections/Hero";
+import { PetList } from "../sections/PetList";
+import { Footer } from "../sections/Footer";
 
 export function Home() {
   return (
