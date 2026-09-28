@@ -66,11 +66,11 @@ export function Header() {
             <nav className="hidden md:flex items-center gap-1">
               <NavLink to="/pets" className={navLinkClass}>
                 <FaHeart className="w-4 h-4" />
-                <span>Explorar</span>
+                <span>Adotar</span>
               </NavLink>
               <NavLink to="/perdidos" className={navLinkClass}>
                 <FaMagnifyingGlassLocation className="w-4 h-4" />
-                <span>Perdidos & Achados</span>
+                <span>Pets Perdidos</span>
               </NavLink>
               <NavLink to="/ongs" className={navLinkClass}>
                 <FaBuildingNgo className="w-4 h-4" />
@@ -98,7 +98,7 @@ export function Header() {
                     className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold px-3.5 py-2 rounded-lg text-sm transition shadow-sm hover:shadow-amber-500/20 cursor-pointer"
                   >
                     <FaPlus className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Anunciar Pet</span>
+                    <span className="hidden sm:inline">Adicionar Pet</span>
                   </button>
 
                   <div className="flex items-center gap-2 pl-2 border-l border-gray-700/60">

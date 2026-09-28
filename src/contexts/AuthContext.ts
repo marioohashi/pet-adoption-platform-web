@@ -14,6 +14,7 @@ export type AuthContextData = {
     session: null | UserAPIResponse
     save: (data: UserAPIResponse) => void
     remove: () => void
+    isAdmin: boolean
 }
 
 export const AuthContext = createContext<AuthContextData | undefined>(undefined)

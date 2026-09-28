@@ -4,37 +4,31 @@ import { AppLayout } from "../components/AppLayout";
 import { ProtectedRoute } from "../components/ProtectedRoute";
 
 import { PetList } from "../components/PetList";
-import { MyPetsList } from "../components/MyPetsList"; // 🟢 Importação do componente real
+import { MyPetsList } from "../components/MyPetsList";
+import { NGOsList } from "../components/NGOsList"
+import { VetsList } from "../components/VetList"
+import { LostPets } from "../components/LostPets"
 
-// Páginas temporárias restantes
-const LostPetsPage = () => <div className="p-4 text-white">Pets Perdidos</div>;
-const NgosPage = () => <div className="p-4 text-white">ONGs</div>;
-const ClinicsPage = () => <div className="p-4 text-white">Clínicas</div>;
 const NewPetPage = () => <div className="p-4 text-white">Anunciar Pet</div>;
 
 export function AppRoutes() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* Layout Principal com Header */}
                 <Route element={<AppLayout />}>
 
-                    {/* 1. ROTAS PÚBLICAS (Visitantes podem ver livremente) */}
                     <Route path="/" element={<Navigate to="/pets" replace />} />
                     <Route path="/pets" element={<PetList />} />
-                    <Route path="/perdidos" element={<LostPetsPage />} />
-                    <Route path="/ongs" element={<NgosPage />} />
-                    <Route path="/clinicas" element={<ClinicsPage />} />
+                    <Route path="/perdidos" element={<LostPets />} />
+                    <Route path="/ongs" element={<NGOsList />} />
+                    <Route path="/clinicas" element={<VetsList />} />
 
-                    {/* 2. ROTAS PROTEGIDAS (Exigem Login) */}
                     <Route element={<ProtectedRoute />}>
-                        <Route path="/pets/novo" element={<NewPetPage />} />
-                        <Route path="/meus-pets" element={<MyPetsList />} /> {/* 🟢 Usando o MyPetsList aqui */}
+                        <Route path="/meus-pets" element={<MyPetsList />} />
                     </Route>
 
                 </Route>
 
-                {/* Redirecionamento para URLs inválidas */}
                 <Route path="*" element={<Navigate to="/pets" replace />} />
             </Routes>
         </BrowserRouter>

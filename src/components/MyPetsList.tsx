@@ -4,6 +4,7 @@ import { getMyPets, deletePet } from "../services/petService";
 import { PetListCard } from "./PetListCard";
 import { PetDetailModal } from "./PetDetailModal";
 import { CreatePetModal } from "./CreatePetModal";
+import { ConfirmModal } from "./ConfirmModal"; // 🟢 1. Importa o ConfirmModal
 import { FaPlus, FaPaw } from "react-icons/fa6";
 import type { Pet } from "../types";
 
@@ -12,6 +13,9 @@ export function MyPetsList() {
     const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
     const [editingPet, setEditingPet] = useState<Pet | null>(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+    // 🟢 2. Estado para controlar qual pet está na mira da exclusão
+    const [petToDelete, setPetToDelete] = useState<Pet | null>(null);
 
     // Busca apenas os pets cadastrados pelo usuário
     const { data: pets = [], isLoading, isError } = useQuery<Pet[]>({
@@ -25,13 +29,17 @@ export function MyPetsList() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["my-pets"] });
             queryClient.invalidateQueries({ queryKey: ["pets"] });
+            setPetToDelete(null); // Fecha o modal após o sucesso
         },
     });
 
-    function handleDelete(pet: Pet) {
-        if (confirm(`Tem certeza que deseja remover "${pet.name}"?`)) {
-            deleteMutation.mutate(pet.id);
-        }
+    function handleDeleteClick(pet: Pet) {
+        setPetToDelete(pet); // Abre o modal bonito ao invés do confirm()
+    }
+
+    function confirmDelete() {
+        if (!petToDelete) return;
+        deleteMutation.mutate(petToDelete.id);
     }
 
     function handleCloseFormModal() {
@@ -78,7 +86,7 @@ export function MyPetsList() {
                             showActions={true}
                             onClick={() => setSelectedPet(pet)}
                             onEdit={(p) => setEditingPet(p)}
-                            onDelete={(p) => handleDelete(p)}
+                            onDelete={(p) => handleDeleteClick(p)} // 🟢 Chama o gatilho do modal
                         />
                     ))}
                 </div>
@@ -89,11 +97,11 @@ export function MyPetsList() {
                     className="bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-amber-500/10 shrink-0"
                 >
                     <FaPlus className="w-4 h-4" />
-                    Anunciar Novo Pet
+                    Adicionar Pet
                 </button>
             </div>
 
-            {/* Modal de Detalhes do Pet (Oculta o botão de contato para o próprio tutor) */}
+            {/* Modal de Detalhes do Pet */}
             <PetDetailModal
                 pet={selectedPet}
                 onClose={() => setSelectedPet(null)}
@@ -105,6 +113,17 @@ export function MyPetsList() {
                 isOpen={isCreateModalOpen || Boolean(editingPet)}
                 initialData={editingPet}
                 onClose={handleCloseFormModal}
+            />
+
+            {/* 🟢 3. Modal Bonito de Confirmação de Exclusão */}
+            <ConfirmModal
+                isOpen={Boolean(petToDelete)}
+                title={`Excluir "${petToDelete?.name}"?`}
+                message="Tem certeza que deseja remover este anúncio do sistema? Esta ação é irreversível e o pet deixará de aparecer para adoção."
+                confirmText="Sim, excluir"
+                cancelText="Cancelar"
+                onConfirm={confirmDelete}
+                onCancel={() => setPetToDelete(null)}
             />
         </section>
     );

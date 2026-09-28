@@ -1,7 +1,7 @@
 export async function uploadToCloudinary(file: File): Promise<string> {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("upload_preset", "adote2pets"); // O nome do preset que você acabou de criar
+    formData.append("upload_preset", "adote2pets");
 
     const response = await fetch(
         `https://api.cloudinary.com/v1_1/dcgysmw5/image/upload`,
@@ -16,5 +16,5 @@ export async function uploadToCloudinary(file: File): Promise<string> {
     }
 
     const data = await response.json();
-    return data.secure_url; // Retorna a URL permanente e segura da imagem
+    return data.secure_url;
 }
