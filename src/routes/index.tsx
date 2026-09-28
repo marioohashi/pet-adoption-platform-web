@@ -4,12 +4,12 @@ import { AppLayout } from "../components/AppLayout";
 import { ProtectedRoute } from "../components/ProtectedRoute";
 
 import { PetList } from "../components/PetList";
+import { MyPetsList } from "../components/MyPetsList"; // 🟢 Importação do componente real
 
-// Páginas temporárias
+// Páginas temporárias restantes
 const LostPetsPage = () => <div className="p-4 text-white">Pets Perdidos</div>;
 const NgosPage = () => <div className="p-4 text-white">ONGs</div>;
 const ClinicsPage = () => <div className="p-4 text-white">Clínicas</div>;
-const MyPetsPage = () => <div className="p-4 text-white">Meus Pets</div>;
 const NewPetPage = () => <div className="p-4 text-white">Anunciar Pet</div>;
 
 export function AppRoutes() {
@@ -29,7 +29,7 @@ export function AppRoutes() {
                     {/* 2. ROTAS PROTEGIDAS (Exigem Login) */}
                     <Route element={<ProtectedRoute />}>
                         <Route path="/pets/novo" element={<NewPetPage />} />
-                        <Route path="/meus-pets" element={<MyPetsPage />} />
+                        <Route path="/meus-pets" element={<MyPetsList />} /> {/* 🟢 Usando o MyPetsList aqui */}
                     </Route>
 
                 </Route>

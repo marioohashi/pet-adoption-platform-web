@@ -1,5 +1,6 @@
 import { api } from "./api";
 import type {
+  Pet,
   Species,
   PetSize,
   PetSex,
@@ -34,5 +35,22 @@ export async function getPets({
     },
   });
 
+  return response.data;
+}
+
+
+export async function getMyPets(): Promise<Pet[]> {
+  const response = await api.get("/animals/me");
+  // Se a sua API retornar um objeto { animals: [...] }, troque para: response.data.animals
+  return response.data;
+}
+
+
+export async function deletePet(id: string): Promise<void> {
+  await api.delete(`/animals/${id}`);
+}
+
+export async function updatePet(id: string, data: Partial<Pet>): Promise<Pet> {
+  const response = await api.put(`/animals/${id}`, data);
   return response.data;
 }
