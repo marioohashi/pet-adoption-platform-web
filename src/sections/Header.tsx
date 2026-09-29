@@ -2,7 +2,6 @@ import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   FaPaw,
-  FaPlus,
   FaBuildingNgo,
   FaKitMedical,
   FaMagnifyingGlassLocation,
@@ -15,14 +14,12 @@ import {
 } from "react-icons/fa6";
 import { useAuth } from "../hooks/useAuth";
 import { AuthModal } from "../modals/AuthModal";
-import { CreatePetModal } from "../modals/CreatePetModal";
 
 export function Header() {
   const { session, remove } = useAuth();
   const navigate = useNavigate();
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isCreatePetModalOpen, setIsCreatePetModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<"signin" | "signup">("signin");
 
@@ -40,16 +37,7 @@ export function Header() {
     setIsMobileMenuOpen(false);
   }
 
-  function handleAnnouncePet() {
-    setIsMobileMenuOpen(false);
-    if (isAuthenticated) {
-      setIsCreatePetModalOpen(true);
-    } else {
-      openModal("signin");
-    }
-  }
-
-  // Estilização dos links seguindo os tokens oficiais (Coral Afeto & Neutros)
+  // Estilização dos links seguindo os tokens oficiais
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all duration-200 md:px-3 md:py-2 ${isActive
       ? "bg-[#FF7A59]/10 text-[#FF7A59] font-semibold border border-[#FF7A59]/20 shadow-xs"
@@ -98,14 +86,6 @@ export function Header() {
                     <FaPaw className="w-4 h-4" />
                     <span>Meus Pets</span>
                   </NavLink>
-
-                  <button
-                    onClick={handleAnnouncePet}
-                    className="flex items-center gap-2 bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold px-4 py-2.5 rounded-2xl text-sm transition-all shadow-sm hover:shadow-md cursor-pointer"
-                  >
-                    <FaPlus className="w-3.5 h-3.5" />
-                    <span>Adicionar Pet</span>
-                  </button>
 
                   <div className="flex items-center gap-2 pl-2 border-l border-[#E4E4E1]">
                     <NavLink
@@ -157,16 +137,12 @@ export function Header() {
       {/* Menu Drawer / Overlay Mobile */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex flex-col">
-          {/* Backdrop Escurecido */}
           <div
             className="fixed inset-0 bg-[#2D2D2D]/40 backdrop-blur-xs transition-opacity"
             onClick={() => setIsMobileMenuOpen(false)}
           />
 
-          {/* Painel do Menu Deslizante */}
-          <div className="relative bg-[#FAFAF8] w-full max-w-sm ml-auto h-full shadow-2xl flex flex-col z-10 border-l border-[#E4E4E1] animate-in slide-in-from-right duration-300">
-
-            {/* Cabeçalho do Drawer */}
+          <div className="relative bg-[#FAFAF8] w-full max-w-sm ml-auto h-full shadow-2xl flex flex-col z-10 border-l border-[#E4E4E1]">
             <div className="flex items-center justify-between p-5 border-b border-[#E4E4E1]">
               <div className="flex items-center gap-2 font-bold text-[#2D2D2D]">
                 <div className="p-2 bg-[#FF7A59]/10 rounded-xl text-[#FF7A59]">
@@ -182,7 +158,6 @@ export function Header() {
               </button>
             </div>
 
-            {/* Corpo de Links do Menu */}
             <div className="flex-1 overflow-y-auto p-5 space-y-2">
               <div onClick={() => setIsMobileMenuOpen(false)}>
                 <NavLink to="/pets" className={navLinkClass}>
@@ -219,37 +194,26 @@ export function Header() {
               )}
             </div>
 
-            {/* Rodapé do Drawer com Ações de Conta */}
             <div className="p-5 border-t border-[#E4E4E1] bg-[#F4F4F2] space-y-3">
               {isAuthenticated ? (
-                <>
-                  <button
-                    onClick={handleAnnouncePet}
-                    className="w-full flex items-center justify-center gap-2 bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold py-3 rounded-2xl text-sm transition shadow-sm cursor-pointer"
+                <div className="flex items-center justify-between pt-2">
+                  <NavLink
+                    to="/settings"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-2 text-xs font-medium text-[#6B7280] hover:text-[#FF7A59]"
                   >
-                    <FaPlus className="w-4 h-4" />
-                    <span>Adicionar Novo Pet</span>
+                    <FaGear className="w-3.5 h-3.5" />
+                    <span>{session?.user?.name || "Minha Conta"}</span>
+                  </NavLink>
+
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-red-600 p-2"
+                  >
+                    <FaRightFromBracket className="w-3.5 h-3.5" />
+                    <span>Sair</span>
                   </button>
-
-                  <div className="flex items-center justify-between pt-2">
-                    <NavLink
-                      to="/settings"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center gap-2 text-xs font-medium text-[#6B7280] hover:text-[#FF7A59]"
-                    >
-                      <FaGear className="w-3.5 h-3.5" />
-                      <span>{session?.user?.name || "Minha Conta"}</span>
-                    </NavLink>
-
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-red-600 p-2"
-                    >
-                      <FaRightFromBracket className="w-3.5 h-3.5" />
-                      <span>Sair</span>
-                    </button>
-                  </div>
-                </>
+                </div>
               ) : (
                 <button
                   onClick={() => openModal("signin")}
@@ -260,16 +224,9 @@ export function Header() {
                 </button>
               )}
             </div>
-
           </div>
         </div>
       )}
-
-      {/* Modais da Aplicação */}
-      <CreatePetModal
-        isOpen={isCreatePetModalOpen}
-        onClose={() => setIsCreatePetModalOpen(false)}
-      />
 
       <AuthModal
         isOpen={isAuthModalOpen}

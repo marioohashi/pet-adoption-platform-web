@@ -16,6 +16,36 @@ interface NGO {
     description?: string | null;
 }
 
+const MOCK_NGOS: NGO[] = [
+    {
+        id: "mock-ngo-1",
+        name: "Ampara Animal Curitiba",
+        image: "https://images.unsplash.com/photo-1548767797-d8c844163c4c",
+        city: "Curitiba - PR",
+        phone: "(41) 98877-6655",
+        website: "https://www.amparaanimal.org.br",
+        description: "Organização dedicada à proteção e amparo de animais em situação de vulnerabilidade, promovendo feiras de adoção e castração consciente."
+    },
+    {
+        id: "mock-ngo-2",
+        name: "SOS Patinhas do Bem",
+        image: "https://images.unsplash.com/photo-1535930891776-0c2dfb7fda1a",
+        city: "São José dos Pinhais - PR",
+        phone: "(41) 97766-5544",
+        website: "https://www.sospatinhasdobem.com.br",
+        description: "Abrigo temporário que resgata cães e gatos vítimas de maus-tratos, oferecendo reabilitação completa até encontrarem um lar definitivo."
+    },
+    {
+        id: "mock-ngo-3",
+        name: "Instituto Focinho Feliz",
+        image: "https://images.unsplash.com/photo-1576201836106-db1758fd1c97",
+        city: "Colombo - PR",
+        phone: "(41) 96655-4433",
+        website: "https://www.institutofocinhofeliz.org",
+        description: "Projeto social focado no resgate, cuidado veterinário intensivo e reintegração social de animais de grande e pequeno porte."
+    }
+];
+
 export function NGOsList() {
     const { isAdmin } = useAuth();
     const queryClient = useQueryClient();
@@ -23,18 +53,22 @@ export function NGOsList() {
     const [selectedNGO, setSelectedNGO] = useState<NGO | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [ngoToEdit, setNgoToEdit] = useState<NGO | null>(null);
-
-    // Estado para controlar o ID da ONG que está sendo excluída
     const [ngoToDeleteId, setNgoToDeleteId] = useState<string | null>(null);
 
-    // Busca as ONGs diretamente da API do backend
-    const { data: ngos = [], isLoading } = useQuery<NGO[]>({
+    // Busca as ONGs da API com Fallback para Mock
+    const { data: rawNgos = [], isLoading } = useQuery<NGO[]>({
         queryKey: ["ngos"],
         queryFn: async () => {
-            const response = await api.get("/ngos");
-            return response.data;
+            try {
+                const response = await api.get("/ngos");
+                return response.data;
+            } catch {
+                return [];
+            }
         },
     });
+
+    const ngos = rawNgos.length > 0 ? rawNgos : MOCK_NGOS;
 
     function handleOpenCreate() {
         setNgoToEdit(null);
@@ -56,7 +90,9 @@ export function NGOsList() {
         if (!ngoToDeleteId) return;
 
         try {
-            await api.delete(`/ngos/${ngoToDeleteId}`);
+            if (!ngoToDeleteId.startsWith("mock-")) {
+                await api.delete(`/ngos/${ngoToDeleteId}`);
+            }
             queryClient.invalidateQueries({ queryKey: ["ngos"] });
             setNgoToDeleteId(null);
         } catch (error) {
@@ -76,7 +112,6 @@ export function NGOsList() {
                     </p>
                 </div>
 
-                {/* Botão de Adicionar restrito a ADMIN */}
                 {isAdmin && (
                     <button
                         onClick={handleOpenCreate}
@@ -93,18 +128,6 @@ export function NGOsList() {
                     {[1, 2, 3].map((n) => (
                         <div key={n} className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-3xl h-80 animate-pulse" />
                     ))}
-                </div>
-            ) : ngos.length === 0 ? (
-                <div className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-3xl p-12 text-center">
-                    <div className="w-16 h-16 bg-[#FF7A59]/10 rounded-2xl flex items-center justify-center mx-auto text-[#FF7A59] mb-3">
-                        <FaBuilding className="w-8 h-8" />
-                    </div>
-                    <h4 className="text-lg font-bold font-['Manrope'] text-[#2D2D2D] mb-1">Nenhuma ONG cadastrada</h4>
-                    <p className="text-[#6B7280] text-sm max-w-md mx-auto leading-relaxed">
-                        {isAdmin
-                            ? "Clique no botão 'Adicionar ONG' acima para cadastrar a primeira instituição."
-                            : "Volte mais tarde para conferir as instituições parceiras cadastradas."}
-                    </p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -232,14 +255,12 @@ export function NGOsList() {
                 </div>
             )}
 
-            {/* Modal de Cadastro/Edição */}
             <CreateNgoModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 initialData={ngoToEdit}
             />
 
-            {/* Modal de Confirmação de Exclusão */}
             <ConfirmModal
                 isOpen={Boolean(ngoToDeleteId)}
                 title="Excluir ONG parceira?"

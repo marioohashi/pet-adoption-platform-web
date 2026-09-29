@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { FaPaw, FaPenToSquare, FaTrash, FaChevronLeft, FaChevronRight } from "react-icons/fa6";
+import { FaPaw, FaPenToSquare, FaTrash, FaChevronLeft, FaChevronRight, FaLocationDot } from "react-icons/fa6";
 import type { Pet } from "../types/index";
 import { formatAge } from "../utils/formatAge";
+import { PET_TYPES } from "../utils/petEnums";
 
 interface PetListCardProps {
   pet: Pet;
@@ -20,7 +21,6 @@ export function PetListCard({
 }: PetListCardProps) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
-  // Consolida o array de fotos (prioriza `photos`, se vazio usa `photo`, senão lista vazia)
   const photos = pet.photos && pet.photos.length > 0
     ? pet.photos
     : pet.photo ? [pet.photo] : [];
@@ -28,23 +28,29 @@ export function PetListCard({
   const hasMultiplePhotos = photos.length > 1;
 
   function handlePrevPhoto(e: React.MouseEvent) {
-    e.stopPropagation(); // Evita abrir o modal de detalhes ao clicar na seta
+    e.stopPropagation();
     setCurrentPhotoIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
   }
 
   function handleNextPhoto(e: React.MouseEvent) {
-    e.stopPropagation(); // Evita abrir o modal de detalhes ao clicar na seta
+    e.stopPropagation();
     setCurrentPhotoIndex((prev) => (prev === photos.length - 1 ? 0 : prev + 1));
   }
 
   const formattedAge = formatAge(pet.age);
+
+  // Cor da tag dependendo se é adoption, lost ou found
+  const badgeColor =
+    pet.type === 'lost' ? 'bg-red-500 text-white' :
+      pet.type === 'found' ? 'bg-amber-600 text-white' :
+        'bg-[#FAFAF8]/90 text-[#FF7A59] border border-[#FF7A59]/20';
 
   return (
     <div
       onClick={onClick}
       className="bg-[#FAFAF8] border border-[#E4E4E1] rounded-3xl overflow-hidden hover:border-[#FF7A59]/50 transition-all duration-300 cursor-pointer flex flex-col group relative shadow-xs hover:shadow-xl font-sans"
     >
-      {/* Container da Imagem com Carrossel */}
+      {/* Imagem com Carrossel */}
       <div className="relative w-full aspect-[4/5] sm:aspect-square bg-[#F4F4F2] flex items-center justify-center overflow-hidden">
         {photos.length > 0 ? (
           <img
@@ -56,7 +62,6 @@ export function PetListCard({
           <FaPaw className="w-16 h-16 text-[#E4E4E1]" />
         )}
 
-        {/* Setas de Navegação (Aparecem no hover e apenas se houver mais de 1 foto) */}
         {hasMultiplePhotos && (
           <>
             <button
@@ -77,14 +82,11 @@ export function PetListCard({
               <FaChevronRight className="w-3.5 h-3.5" />
             </button>
 
-            {/* Indicadores de Página (Pontinhos / Dots) */}
             <div className="absolute bottom-3 inset-x-0 flex items-center justify-center gap-1.5 z-10">
               {photos.map((_, idx) => (
                 <span
                   key={idx}
-                  className={`h-1.5 rounded-full transition-all ${currentPhotoIndex === idx
-                      ? "w-4 bg-[#FF7A59]"
-                      : "w-1.5 bg-white/70"
+                  className={`h-1.5 rounded-full transition-all ${currentPhotoIndex === idx ? "w-4 bg-[#FF7A59]" : "w-1.5 bg-white/70"
                     }`}
                 />
               ))}
@@ -92,37 +94,33 @@ export function PetListCard({
           </>
         )}
 
-        {/* Tag de Status Flutuante sobre a Foto */}
+        {/* Tag de Finalidade (Adoção / Perdido / Encontrado) */}
         <div className="absolute top-3 left-3 z-10">
-          <span className="text-xs px-3 py-1 rounded-full bg-[#FAFAF8]/90 backdrop-blur-md text-[#FF7A59] font-semibold border border-[#FF7A59]/20 shadow-xs">
-            {pet.status === "available" ? "Disponível" : pet.status}
+          <span className={`text-[11px] px-3 py-1 rounded-full font-semibold backdrop-blur-md shadow-xs ${badgeColor}`}>
+            {PET_TYPES[pet.type as keyof typeof PET_TYPES] || (pet.status === "available" ? "Disponível" : pet.status)}
           </span>
         </div>
       </div>
 
-      {/* Conteúdo / Rodapé do Card */}
-      <div className="p-4 flex-1 flex flex-col justify-between gap-2">
+      {/* Conteúdo do Card */}
+      <div className="p-4 flex-1 flex flex-col justify-between gap-3">
         <div className="flex items-start justify-between gap-2">
           <div>
             <h3 className="text-base sm:text-lg font-bold font-['Manrope'] text-[#2D2D2D] leading-snug group-hover:text-[#FF7A59] transition-colors line-clamp-1">
               {pet.name}
             </h3>
             <p className="text-xs text-[#6B7280] font-medium mt-1">
-              {pet.breed || "Sem raça definida"}
+              {pet.breed || "Raça não informada"}
               {formattedAge ? ` • ${formattedAge}` : ""}
             </p>
           </div>
 
-          {/* Botões de Ação do Proprietário */}
           {showActions && (
             <div className="flex items-center gap-1 shrink-0">
               {onEdit && (
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit(pet);
-                  }}
+                  onClick={(e) => { e.stopPropagation(); onEdit(pet); }}
                   className="p-2 text-[#6B7280] hover:text-[#FF7A59] hover:bg-[#F4F4F2] rounded-xl transition cursor-pointer"
                   title="Editar pet"
                 >
@@ -133,10 +131,7 @@ export function PetListCard({
               {onDelete && (
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(pet);
-                  }}
+                  onClick={(e) => { e.stopPropagation(); onDelete(pet); }}
                   className="p-2 text-[#6B7280] hover:text-red-500 hover:bg-red-50 rounded-xl transition cursor-pointer"
                   title="Remover pet"
                 >
@@ -146,6 +141,14 @@ export function PetListCard({
             </div>
           )}
         </div>
+
+        {/* Localização (Cidade / Estado) */}
+        {pet.city && (
+          <div className="flex items-center gap-1.5 text-xs text-[#6B7280] pt-2 border-t border-[#E4E4E1]">
+            <FaLocationDot className="w-3.5 h-3.5 text-[#FF7A59]" />
+            <span className="truncate">{pet.city}{pet.state ? `, ${pet.state}` : ""}</span>
+          </div>
+        )}
       </div>
     </div>
   );

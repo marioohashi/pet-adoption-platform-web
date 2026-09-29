@@ -12,7 +12,7 @@ interface VetPartner {
     type?: "Clinica" | "Veterinario";
     image?: string;
     avatarUrl: string;
-    crmv: string;
+    crmv?: string;
     city?: string;
     phone: string;
     address: string;
@@ -20,6 +20,48 @@ interface VetPartner {
     specialty: string;
     description?: string | null;
 }
+
+const MOCK_VETS: VetPartner[] = [
+    {
+        id: "mock-1",
+        name: "Clínica Veterinária Amigo Fiel",
+        type: "Clinica",
+        avatarUrl: "https://images.unsplash.com/photo-1584132967334-10e028bd69f7",
+        crmv: "CRMV-PR 1234",
+        city: "Curitiba - PR",
+        phone: "(41) 3322-1122",
+        address: "Av. Visconde de Guarapuava, 2800",
+        hours: "Seg a Sex: 08h às 20h | Sáb: 08h às 14h",
+        specialty: "Clínica Geral, Cirurgia e Internamento",
+        description: "Infraestrutura completa com centro cirúrgico moderno, exames laboratoriais e atendimento humanizado para cães e gatos."
+    },
+    {
+        id: "mock-2",
+        name: "Dra. Juliana Mendes",
+        type: "Veterinario",
+        avatarUrl: "https://images.unsplash.com/photo-1594824813575-263a23a886df",
+        crmv: "CRMV-PR 5678",
+        city: "Curitiba - PR",
+        phone: "(41) 99888-7766",
+        address: "Atendimento Domiciliar e Especializado",
+        hours: "Com hora marcada",
+        specialty: "Dermatologia Veterinária e Alergias",
+        description: "Especialista em cuidados de pele, testes alérgicos e tratamentos dermatológicos avançados para pets."
+    },
+    {
+        id: "mock-3",
+        name: "Hospital Veterinário 24h PetSaúde",
+        type: "Clinica",
+        avatarUrl: "https://images.unsplash.com/photo-1629909613654-28e377c37b09",
+        crmv: "CRMV-PR 9988",
+        city: "Curitiba - PR",
+        phone: "(41) 3019-9900",
+        address: "Rua Dos Canários, 450",
+        hours: "Plantão 24 Horas",
+        specialty: "Emergência, UTI e Diagnóstico por Imagem",
+        description: "Pronto-socorro veterinário 24h equipado com raio-x digital, ultrassonografia e equipe de plantão especializada."
+    }
+];
 
 export function VetsList() {
     const { isAdmin } = useAuth();
@@ -30,18 +72,25 @@ export function VetsList() {
     const [vetToEdit, setVetToEdit] = useState<VetPartner | null>(null);
     const [vetToDeleteId, setVetToDeleteId] = useState<string | null>(null);
 
-    // Busca da API
-    const { data: vets = [], isLoading } = useQuery<VetPartner[]>({
+    // Busca da API com Fallback para Mock caso falhe ou retorne vazio
+    const { data: rawVets = [], isLoading } = useQuery<VetPartner[]>({
         queryKey: ["vets"],
         queryFn: async () => {
-            const response = await api.get("/vets");
-            return response.data;
+            try {
+                const response = await api.get("/vets");
+                return response.data;
+            } catch {
+                return [];
+            }
         },
     });
+
+    const vets = rawVets.length > 0 ? rawVets : MOCK_VETS;
 
     // Mutation para deletar
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => {
+            if (id.startsWith("mock-")) return; // Simula exclusão se for mock
             await api.delete(`/vets/${id}`);
         },
         onSuccess: () => {
@@ -66,7 +115,6 @@ export function VetsList() {
 
     return (
         <section className="w-full font-sans">
-            {/* Cabeçalho da Seção */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
                     <h3 className="text-3xl font-bold font-['Manrope'] text-[#2D2D2D] mb-1 tracking-tight">
@@ -88,25 +136,13 @@ export function VetsList() {
                 )}
             </div>
 
-            {/* Estados de Carregamento e Vazio */}
             {isLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {[1, 2, 3, 4].map((n) => (
                         <div key={n} className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-3xl h-80 animate-pulse" />
                     ))}
                 </div>
-            ) : vets.length === 0 ? (
-                <div className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-3xl p-12 text-center">
-                    <div className="w-16 h-16 bg-[#FF7A59]/10 rounded-2xl flex items-center justify-center mx-auto mb-4 text-[#FF7A59]">
-                        <FaBuilding className="w-8 h-8" />
-                    </div>
-                    <h4 className="text-lg font-bold font-['Manrope'] text-[#2D2D2D] mb-1">Nenhum parceiro cadastrado</h4>
-                    <p className="text-[#6B7280] text-sm max-w-sm mx-auto">
-                        {isAdmin ? "Clique em 'Adicionar Clínica / Vet' para cadastrar o primeiro parceiro." : "Volte mais tarde para conferir os profissionais cadastrados."}
-                    </p>
-                </div>
             ) : (
-                /* Listagem em Grid */
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {vets.map((vet) => {
                         const avatarSrc = vet.avatarUrl || vet.image;
@@ -116,7 +152,6 @@ export function VetsList() {
                                 onClick={() => setSelectedVet(vet)}
                                 className="bg-[#FAFAF8] border border-[#E4E4E1] rounded-3xl overflow-hidden hover:border-[#FF7A59]/50 transition-all duration-300 cursor-pointer flex flex-col group relative shadow-xs hover:shadow-xl"
                             >
-                                {/* Imagem e Badge do Tipo */}
                                 <div className="relative w-full aspect-[4/5] sm:aspect-square bg-[#F4F4F2] flex items-center justify-center overflow-hidden">
                                     <img
                                         src={avatarSrc || "https://images.unsplash.com/photo-1584132967334-10e028bd69f7"}
@@ -130,7 +165,6 @@ export function VetsList() {
                                     </div>
                                 </div>
 
-                                {/* Informações do Card */}
                                 <div className="p-4 flex-1 flex flex-col justify-between gap-3">
                                     <div className="flex items-start justify-between gap-2">
                                         <div>
@@ -173,7 +207,7 @@ export function VetsList() {
                 </div>
             )}
 
-            {/* Modal de Detalhes (Estilo Airbnb / Acolhedor) */}
+            {/* Modal de Detalhes */}
             {selectedVet && (
                 <div className="fixed inset-0 z-50 bg-[#2D2D2D]/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="bg-[#FAFAF8] border border-[#E4E4E1] rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl relative text-[#2D2D2D] p-6 sm:p-8 space-y-6">
@@ -245,14 +279,12 @@ export function VetsList() {
                 </div>
             )}
 
-            {/* Modal de Cadastro/Edição */}
             <CreateVetModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 initialData={vetToEdit}
             />
 
-            {/* Modal de Confirmação de Exclusão */}
             <ConfirmModal
                 isOpen={Boolean(vetToDeleteId)}
                 title="Excluir parceiro de saúde?"

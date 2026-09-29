@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { FaXmark, FaPaw, FaChevronLeft, FaChevronRight, FaMaximize } from "react-icons/fa6";
+import { FaXmark, FaPaw, FaChevronLeft, FaChevronRight, FaMaximize, FaLocationDot, FaPhone, FaCalendarDays } from "react-icons/fa6";
 import type { Pet } from "../types/index";
 import { formatAge } from "../utils/formatAge";
 import { useEscapeKey } from "../hooks/useEscapeKey";
+import { PET_TYPES } from "../utils/petEnums";
 
 interface PetDetailModalProps {
     pet: Pet | null;
@@ -58,11 +59,23 @@ export function PetDetailModal({
         if (onRequireAuth) {
             onRequireAuth();
         } else {
-            alert(`Mensagem enviada para o tutor do pet ${pet?.name}!`);
+            // Abre o discador se houver telefone cadastrado
+            if (pet?.phone) {
+                window.location.href = `tel:${pet.phone}`;
+            } else {
+                alert(`Contato: ${pet?.contactName || "Responsável"} (Telefone não informado)`);
+            }
         }
     }
 
     const formattedAge = formatAge(pet.age);
+    const formattedDate = pet.date ? new Date(pet.date).toLocaleDateString("pt-BR") : null;
+
+    // Cor da tag dependendo da finalidade do pet
+    const badgeColor =
+        pet.type === 'lost' ? 'bg-red-500/10 text-red-600 border-red-200' :
+            pet.type === 'found' ? 'bg-amber-500/10 text-amber-700 border-amber-200' :
+                'bg-[#FF7A59]/10 text-[#FF7A59] border-[#FF7A59]/20';
 
     return (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 animate-fadeIn font-sans">
@@ -79,7 +92,7 @@ export function PetDetailModal({
                     <FaXmark className="w-5 h-5" />
                 </button>
 
-                {/* Foto do Pet em Destaque (Clicável para expandir) */}
+                {/* Foto do Pet em Destaque */}
                 <div
                     onClick={() => activePhoto && setIsFullScreen(true)}
                     className="relative w-full aspect-[16/10] bg-[#F4F4F2] rounded-2xl overflow-hidden flex items-center justify-center border border-[#E4E4E1] group shadow-inner cursor-zoom-in"
@@ -95,7 +108,6 @@ export function PetDetailModal({
                         <FaPaw className="w-20 h-20 text-[#6B7280]" />
                     )}
 
-                    {/* Ícone indicativo de zoom no hover */}
                     {activePhoto && (
                         <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <span className="bg-black/75 backdrop-blur-md text-white text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-lg font-medium">
@@ -104,7 +116,6 @@ export function PetDetailModal({
                         </div>
                     )}
 
-                    {/* Setas de Navegação */}
                     {hasMultiplePhotos && (
                         <>
                             <button
@@ -125,14 +136,11 @@ export function PetDetailModal({
                                 <FaChevronRight className="w-5 h-5" />
                             </button>
 
-                            {/* Indicadores de Página */}
                             <div className="absolute bottom-4 inset-x-0 flex items-center justify-center gap-2 z-10 pointer-events-none">
                                 {allPhotos.map((_, idx) => (
                                     <span
                                         key={idx}
-                                        className={`h-2 rounded-full transition-all shadow-xs ${selectedPhotoIndex === idx
-                                            ? "w-6 bg-[#FF7A59]"
-                                            : "w-2 bg-white/60 hover:bg-white"
+                                        className={`h-2 rounded-full transition-all shadow-xs ${selectedPhotoIndex === idx ? "w-6 bg-[#FF7A59]" : "w-2 bg-white/60 hover:bg-white"
                                             }`}
                                     />
                                 ))}
@@ -159,20 +167,44 @@ export function PetDetailModal({
                     </div>
                 )}
 
-                {/* Cabeçalho */}
-                <div className="flex items-start justify-between border-b border-[#E4E4E1] pb-5 gap-4">
+                {/* Cabeçalho com Nome e Tipo */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#E4E4E1] pb-5 gap-4">
                     <div>
                         <h2 className="text-3xl font-bold font-['Manrope'] text-[#2D2D2D] tracking-tight">{pet.name}</h2>
                         <p className="text-sm text-[#6B7280] mt-1">
                             {pet.breed || "Sem raça definida"} {formattedAge ? `• ${formattedAge}` : ""}
                         </p>
                     </div>
-                    <span className="text-xs font-semibold px-4 py-2 rounded-xl bg-[#FF7A59]/10 text-[#FF7A59] border border-[#FF7A59]/20 shrink-0">
-                        {pet.status === "available" ? "Disponível para Adoção" : pet.status}
+                    <span className={`text-xs font-semibold px-4 py-2 rounded-xl border shrink-0 w-fit ${badgeColor}`}>
+                        {PET_TYPES[pet.type as keyof typeof PET_TYPES] || (pet.status === "available" ? "Disponível" : pet.status)}
                     </span>
                 </div>
 
-                {/* Sobre e Ação */}
+                {/* Informações Extras (Localização, Data e Recompensa) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {pet.city && (
+                        <div className="flex items-center gap-2.5 bg-[#F4F4F2] border border-[#E4E4E1] p-3 rounded-2xl text-xs text-[#6B7280]">
+                            <FaLocationDot className="w-4 h-4 text-[#FF7A59] shrink-0" />
+                            <span className="truncate font-medium text-[#2D2D2D]">{pet.city}{pet.state ? `, ${pet.state}` : ""}</span>
+                        </div>
+                    )}
+
+                    {formattedDate && (
+                        <div className="flex items-center gap-2.5 bg-[#F4F4F2] border border-[#E4E4E1] p-3 rounded-2xl text-xs text-[#6B7280]">
+                            <FaCalendarDays className="w-4 h-4 text-[#FF7A59] shrink-0" />
+                            <span className="truncate font-medium text-[#2D2D2D]">Ocorrido em: {formattedDate}</span>
+                        </div>
+                    )}
+
+                    {pet.reward && (
+                        <div className="flex items-center gap-2.5 bg-[#FFF8F5] border border-[#FF7A59]/30 p-3 rounded-2xl text-xs text-[#FF7A59]">
+                            <FaCircleDollarToSign className="w-4 h-4 shrink-0" />
+                            <span className="truncate font-bold">Recompensa: {pet.reward}</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Descrição / Sobre */}
                 {pet.description && (
                     <div className="bg-[#F4F4F2] border border-[#E4E4E1] p-5 rounded-2xl space-y-2">
                         <h4 className="text-xs font-bold text-[#FF7A59] uppercase tracking-wider">Sobre o pet</h4>
@@ -180,13 +212,28 @@ export function PetDetailModal({
                     </div>
                 )}
 
+                {/* Contato do Responsável */}
                 {showContactButton && (
-                    <button
-                        onClick={handleContactTutor}
-                        className="w-full bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold py-4 rounded-2xl transition cursor-pointer shadow-sm text-base"
-                    >
-                        Entrar em contato com tutor
-                    </button>
+                    <div className="pt-2">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#FAFAF8] border border-[#E4E4E1] p-4 rounded-2xl">
+                            <div className="text-left w-full sm:w-auto">
+                                <span className="text-[11px] font-bold text-[#6B7280] uppercase tracking-wider block">Responsável pelo contato</span>
+                                <span className="text-sm font-semibold text-[#2D2D2D]">{pet.contactName || "Anunciante"}</span>
+                                {pet.phone && (
+                                    <span className="text-xs text-[#6B7280] flex items-center gap-1.5 mt-0.5">
+                                        <FaPhone className="w-3 h-3 text-[#FF7A59]" /> {pet.phone}
+                                    </span>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={handleContactTutor}
+                                className="w-full sm:w-auto bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold px-6 py-3.5 rounded-2xl transition cursor-pointer shadow-sm text-sm flex items-center justify-center gap-2 shrink-0"
+                            >
+                                <FaPhone className="w-4 h-4" /> Entrar em contato
+                            </button>
+                        </div>
+                    </div>
                 )}
 
             </div>
@@ -197,7 +244,6 @@ export function PetDetailModal({
                     onClick={() => setIsFullScreen(false)}
                     className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-8 animate-fadeIn cursor-zoom-out"
                 >
-                    {/* Botão Fechar Tela Cheia */}
                     <button
                         onClick={() => setIsFullScreen(false)}
                         type="button"
@@ -207,7 +253,6 @@ export function PetDetailModal({
                         <FaXmark className="w-6 h-6" />
                     </button>
 
-                    {/* Imagem em tamanho máximo mantendo proporção */}
                     <div className="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
                         <img
                             src={activePhoto}
@@ -215,7 +260,6 @@ export function PetDetailModal({
                             className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl border border-white/10"
                         />
 
-                        {/* Setas de navegação na tela cheia */}
                         {hasMultiplePhotos && (
                             <>
                                 <button

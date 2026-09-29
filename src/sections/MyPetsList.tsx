@@ -1,20 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { getMyPets, deletePet } from "../services/petService";
+import { getMyPets, deletePet, updatePet } from "../services/petService";
 import { PetListCard } from "./PetListCard";
 import { PetDetailModal } from "../modals/PetDetailModal";
 import { CreatePetModal } from "../modals/CreatePetModal";
 import { ConfirmModal } from "../modals/ConfirmModal";
-import { FaPlus, FaPaw } from "react-icons/fa6";
+import { FaPlus, FaPaw, FaFilter } from "react-icons/fa6";
 import type { Pet } from "../types";
+
+type TabFilter = "todos" | "adocao" | "perdido" | "achado";
 
 export function MyPetsList() {
     const queryClient = useQueryClient();
     const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
     const [editingPet, setEditingPet] = useState<Pet | null>(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
     const [petToDelete, setPetToDelete] = useState<Pet | null>(null);
+
+    const [activeTab, setActiveTab] = useState<TabFilter>("todos");
 
     const { data: pets = [], isLoading, isError } = useQuery<Pet[]>({
         queryKey: ["my-pets"],
@@ -26,12 +29,22 @@ export function MyPetsList() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["my-pets"] });
             queryClient.invalidateQueries({ queryKey: ["pets"] });
-            setPetToDelete(null); // Fecha o modal após o sucesso
+            setPetToDelete(null);
+        },
+    });
+
+    const updateStatusMutation = useMutation({
+        mutationFn: async ({ id, newStatus }: { id: string; newStatus: string }) => {
+            return updatePet(id, { status: newStatus });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["my-pets"] });
+            queryClient.invalidateQueries({ queryKey: ["pets"] });
         },
     });
 
     function handleDeleteClick(pet: Pet) {
-        setPetToDelete(pet); // Abre o modal bonito ao invés do confirm()
+        setPetToDelete(pet);
     }
 
     function confirmDelete() {
@@ -44,84 +57,205 @@ export function MyPetsList() {
         setEditingPet(null);
     }
 
+    // Função auxiliar robusta para verificar a categoria/tipo do pet independentemente de como a API retorna
+    function matchTab(pet: any, tab: TabFilter) {
+        if (tab === "todos") return true;
+
+        // Verifica múltiplas propriedades possíveis (type, category) e valores (pt/en)
+        const val = (pet.type || pet.category || "").toLowerCase();
+
+        if (tab === "adocao") {
+            return val.includes("adocao") || val.includes("adoption") || val.includes("doacao");
+        }
+        if (tab === "perdido") {
+            return val.includes("perdido") || val.includes("lost");
+        }
+        if (tab === "achado") {
+            return val.includes("achado") || val.includes("found");
+        }
+        return false;
+    }
+
+    const filteredPets = pets.filter((pet) => matchTab(pet, activeTab));
+
+    const counts = {
+        todos: pets.length,
+        adocao: pets.filter((p) => matchTab(p, "adocao")).length,
+        perdido: pets.filter((p) => matchTab(p, "perdido")).length,
+        achado: pets.filter((p) => matchTab(p, "achado")).length,
+    };
+
     if (isLoading) {
         return <p className="text-center py-12 text-[#6B7280] font-sans">Carregando seus pets...</p>;
     }
 
     if (isError) {
-        return <p className="text-center py-12 text-red-500 font-sans">Erro ao carregar seus pets.</p>;
+        return <p className="text-center py-12 text-red-500 font-sans">Erro ao carregar seus pets do servidor.</p>;
     }
 
     return (
         <section className="w-full font-sans">
-            {/* Cabeçalho da Aba */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            {/* Cabeçalho */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div>
                     <h3 className="text-3xl font-bold font-['Manrope'] text-[#2D2D2D] mb-1 tracking-tight">
                         Meus Pets Cadastrados
                     </h3>
                     <p className="text-sm text-[#6B7280] leading-relaxed">
-                        Gerencie e edite as informações dos pets que você colocou para adoção no Adote2Pets
+                        Gerencie seus anúncios de adoção, alertas de perdidos e animais achados.
                     </p>
                 </div>
             </div>
 
-            {/* Lista Vazia */}
-            {pets.length === 0 ? (
+            {/* Abas de Filtro responsivas (Grid no mobile, Flex no desktop) */}
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 pb-4 mb-8">
+                <button
+                    onClick={() => setActiveTab("todos")}
+                    className={`px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2 ${activeTab === "todos"
+                            ? "bg-[#FF7A59] text-white shadow-sm"
+                            : "bg-[#F4F4F2] text-[#6B7280] hover:bg-[#E4E4E1] hover:text-[#2D2D2D]"
+                        }`}
+                >
+                    <FaFilter className="w-3.5 h-3.5 shrink-0" />
+                    <span>Todos ({counts.todos})</span>
+                </button>
+                <button
+                    onClick={() => setActiveTab("adocao")}
+                    className={`px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer text-center ${activeTab === "adocao"
+                            ? "bg-[#FF7A59] text-white shadow-sm"
+                            : "bg-[#F4F4F2] text-[#6B7280] hover:bg-[#E4E4E1] hover:text-[#2D2D2D]"
+                        }`}
+                >
+                    🐾 Adoção ({counts.adocao})
+                </button>
+                <button
+                    onClick={() => setActiveTab("perdido")}
+                    className={`px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer text-center ${activeTab === "perdido"
+                            ? "bg-[#FF7A59] text-white shadow-sm"
+                            : "bg-[#F4F4F2] text-[#6B7280] hover:bg-[#E4E4E1] hover:text-[#2D2D2D]"
+                        }`}
+                >
+                    🚨 Perdidos ({counts.perdido})
+                </button>
+                <button
+                    onClick={() => setActiveTab("achado")}
+                    className={`px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer text-center ${activeTab === "achado"
+                            ? "bg-[#FF7A59] text-white shadow-sm"
+                            : "bg-[#F4F4F2] text-[#6B7280] hover:bg-[#E4E4E1] hover:text-[#2D2D2D]"
+                        }`}
+                >
+                    🔍 Achados ({counts.achado})
+                </button>
+            </div>
+
+            {/* Listagem Vazia */}
+            {filteredPets.length === 0 ? (
                 <div className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-3xl p-12 text-center space-y-4">
                     <div className="w-16 h-16 bg-[#FF7A59]/10 rounded-2xl flex items-center justify-center mx-auto text-[#FF7A59]">
                         <FaPaw className="w-8 h-8" />
                     </div>
-                    <h4 className="text-lg font-bold font-['Manrope'] text-[#2D2D2D]">Nenhum pet anunciado ainda</h4>
+                    <h4 className="text-lg font-bold font-['Manrope'] text-[#2D2D2D]">Nenhum anúncio encontrado</h4>
                     <p className="text-sm text-[#6B7280] max-w-md mx-auto leading-relaxed">
-                        Você ainda não cadastrou nenhum amiguinho. Clique no botão abaixo para criar seu primeiro anúncio!
+                        Você não possui nenhum pet cadastrado nesta categoria no momento.
                     </p>
                 </div>
             ) : (
-                /* Grid de Cards */
+                /* Grid de Cards com Ferramenta de Status */
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    {pets.map((pet) => (
-                        <PetListCard
-                            key={pet.id}
-                            pet={pet}
-                            showActions={true}
-                            onClick={() => setSelectedPet(pet)}
-                            onEdit={(p) => setEditingPet(p)}
-                            onDelete={(p) => handleDeleteClick(p)}
-                        />
+                    {filteredPets.map((pet) => (
+                        <div key={pet.id} className="flex flex-col gap-2">
+                            <PetListCard
+                                pet={pet}
+                                showActions={true}
+                                onClick={() => setSelectedPet(pet)}
+                                onEdit={(p) => setEditingPet(p)}
+                                onDelete={(p) => handleDeleteClick(p)}
+                            />
+
+                            {/* Barra de Administração de Status do Anúncio */}
+                            <div className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-2xl p-3 flex flex-col gap-2 text-xs">
+                                <div className="flex items-center justify-between text-[#6B7280]">
+                                    <span className="font-semibold uppercase tracking-wider text-[10px] text-[#FF7A59]">
+                                        {pet.type || pet.category || "Anúncio"}
+                                    </span>
+                                    <span>Status: <strong className="text-[#2D2D2D]">{pet.status || "Ativo"}</strong></span>
+                                </div>
+
+                                <div className="flex items-center gap-1.5 pt-1 border-t border-[#E4E4E1]">
+                                    <span className="text-[11px] text-[#6B7280] font-medium mr-auto">Marcar como:</span>
+                                    {matchTab(pet, "adocao") && (
+                                        <button
+                                            type="button"
+                                            onClick={() => updateStatusMutation.mutate({ id: pet.id, newStatus: "Adotado" })}
+                                            className="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-semibold rounded-lg transition cursor-pointer"
+                                            title="Marcar como Doado/Adotado"
+                                        >
+                                            Adotado
+                                        </button>
+                                    )}
+                                    {matchTab(pet, "perdido") && (
+                                        <button
+                                            type="button"
+                                            onClick={() => updateStatusMutation.mutate({ id: pet.id, newStatus: "Encontrado" })}
+                                            className="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-semibold rounded-lg transition cursor-pointer"
+                                            title="Marcar como Encontrado"
+                                        >
+                                            Encontrado
+                                        </button>
+                                    )}
+                                    {matchTab(pet, "achado") && (
+                                        <button
+                                            type="button"
+                                            onClick={() => updateStatusMutation.mutate({ id: pet.id, newStatus: "Tutor Localizado" })}
+                                            className="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-semibold rounded-lg transition cursor-pointer"
+                                            title="Marcar como Tutor Localizado"
+                                        >
+                                            Devolvido
+                                        </button>
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={() => updateStatusMutation.mutate({ id: pet.id, newStatus: "Ativo" })}
+                                        className="px-2 py-1 bg-[#E4E4E1] hover:bg-[#d8d8d5] text-[#2D2D2D] font-semibold rounded-lg transition cursor-pointer"
+                                        title="Voltar para Ativo"
+                                    >
+                                        Ativo
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     ))}
                 </div>
             )}
 
-            <div className="flex justify-center pt-2 my-10">
+            {/* Botão Inferior */}
+            <div className="flex justify-center pt-6 my-10">
                 <button
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold px-5 py-3 rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:shadow-md shrink-0 text-sm"
+                    className="bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold px-6 py-3.5 rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:shadow-md shrink-0 text-sm"
                 >
                     <FaPlus className="w-4 h-4" />
-                    Adicionar Pet
+                    Adicionar Novo Anúncio
                 </button>
             </div>
 
-            {/* Modal de Detalhes do Pet */}
+            {/* Modais */}
             <PetDetailModal
                 pet={selectedPet}
                 onClose={() => setSelectedPet(null)}
                 showContactButton={false}
             />
 
-            {/* Modal de Criação / Edição de Pet */}
             <CreatePetModal
                 isOpen={isCreateModalOpen || Boolean(editingPet)}
                 initialData={editingPet}
                 onClose={handleCloseFormModal}
             />
 
-            {/* Modal Bonito de Confirmação de Exclusão */}
             <ConfirmModal
                 isOpen={Boolean(petToDelete)}
-                title={`Excluir "${petToDelete?.name}"?`}
-                message="Tem certeza que deseja remover este anúncio do sistema? Esta ação é irreversível e o pet deixará de aparecer para adoção."
+                title={`Excluir "${petToDelete?.name || 'este pet'}"?`}
+                message="Tem certeza que deseja remover este anúncio do sistema? Esta ação é irreversível."
                 confirmText="Sim, excluir"
                 cancelText="Cancelar"
                 onConfirm={confirmDelete}

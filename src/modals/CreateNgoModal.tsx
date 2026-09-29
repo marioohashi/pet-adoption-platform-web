@@ -114,7 +114,6 @@ export function CreateNgoModal({ isOpen, onClose, initialData }: CreateNgoModalP
         try {
             let finalImageUrl = imagePreview;
 
-            // Se o usuário selecionou um arquivo novo, envia direto para o Cloudinary
             if (selectedFile) {
                 finalImageUrl = await uploadToCloudinary(selectedFile);
             }
@@ -133,7 +132,7 @@ export function CreateNgoModal({ isOpen, onClose, initialData }: CreateNgoModalP
 
             const payload = {
                 ...validatedData,
-                image: finalImageUrl, // Envia a URL segura do Cloudinary
+                image: finalImageUrl,
             };
 
             if (isEditing && initialData) {
@@ -165,7 +164,6 @@ export function CreateNgoModal({ isOpen, onClose, initialData }: CreateNgoModalP
             <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn font-sans">
                 <div className="bg-[#FAFAF8] border border-[#E4E4E1] rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl relative text-[#2D2D2D] flex flex-col max-h-[90vh]">
 
-                    {/* Botão Fechar */}
                     <button
                         onClick={handleRequestClose}
                         type="button"
@@ -174,7 +172,6 @@ export function CreateNgoModal({ isOpen, onClose, initialData }: CreateNgoModalP
                         <FaXmark className="w-5 h-5" />
                     </button>
 
-                    {/* Cabeçalho */}
                     <div className="p-6 sm:p-7 pb-4 border-b border-[#E4E4E1] flex items-center gap-3.5">
                         <div className="p-3 bg-[#FF7A59]/10 rounded-2xl text-[#FF7A59]">
                             <FaBuilding className="w-6 h-6" />
@@ -189,7 +186,6 @@ export function CreateNgoModal({ isOpen, onClose, initialData }: CreateNgoModalP
                         </div>
                     </div>
 
-                    {/* Formulário */}
                     <form onSubmit={handleSubmit} className="p-6 sm:p-7 overflow-y-auto space-y-4 flex-1">
                         {errorMessage && (
                             <div className="bg-red-50 border border-red-200 text-red-600 text-xs p-3 rounded-xl text-center break-words font-medium">
@@ -197,7 +193,6 @@ export function CreateNgoModal({ isOpen, onClose, initialData }: CreateNgoModalP
                             </div>
                         )}
 
-                        {/* Imagem da ONG */}
                         <div>
                             <label className="block text-xs font-semibold text-[#2D2D2D] mb-1.5">
                                 Foto / Logotipo da ONG <span className="text-[#FF7A59]">*</span>
@@ -286,7 +281,7 @@ export function CreateNgoModal({ isOpen, onClose, initialData }: CreateNgoModalP
                             <Button
                                 type="submit"
                                 isLoading={isLoading}
-                                className="w-full bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold py-3.5 rounded-2xl shadow-sm text-sm transition"
+                                className="w-full bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold py-3.5 rounded-2xl shadow-sm text-sm transition cursor-pointer"
                             >
                                 {isEditing ? "Salvar Alterações" : "Cadastrar ONG"}
                             </Button>
