@@ -45,37 +45,41 @@ export function MyPetsList() {
     }
 
     if (isLoading) {
-        return <p className="text-center py-12 text-gray-300">Carregando seus pets...</p>;
+        return <p className="text-center py-12 text-[#6B7280] font-sans">Carregando seus pets...</p>;
     }
 
     if (isError) {
-        return <p className="text-center py-12 text-red-400">Erro ao carregar seus pets.</p>;
+        return <p className="text-center py-12 text-red-500 font-sans">Erro ao carregar seus pets.</p>;
     }
 
     return (
-        <section className="w-full">
+        <section className="w-full font-sans">
             {/* Cabeçalho da Aba */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h3 className="text-3xl font-bold text-white mb-1">Meus Pets Cadastrados</h3>
-                    <p className="text-sm text-gray-400">
-                        Gerencie e edite as informações dos pets que você colocou para adoção
+                    <h3 className="text-3xl font-bold font-['Manrope'] text-[#2D2D2D] mb-1 tracking-tight">
+                        Meus Pets Cadastrados
+                    </h3>
+                    <p className="text-sm text-[#6B7280] leading-relaxed">
+                        Gerencie e edite as informações dos pets que você colocou para adoção no Adote2Pets
                     </p>
                 </div>
             </div>
 
             {/* Lista Vazia */}
             {pets.length === 0 ? (
-                <div className="bg-gray-800/40 border border-gray-700/60 rounded-2xl p-12 text-center space-y-4">
-                    <FaPaw className="w-12 h-12 text-gray-600 mx-auto" />
-                    <h4 className="text-lg font-semibold text-gray-200">Nenhum pet anunciado ainda</h4>
-                    <p className="text-sm text-gray-400 max-w-md mx-auto">
-                        Você ainda não cadastrou nenhum amiguinho. Clique no botão acima para criar seu primeiro anúncio!
+                <div className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-3xl p-12 text-center space-y-4">
+                    <div className="w-16 h-16 bg-[#FF7A59]/10 rounded-2xl flex items-center justify-center mx-auto text-[#FF7A59]">
+                        <FaPaw className="w-8 h-8" />
+                    </div>
+                    <h4 className="text-lg font-bold font-['Manrope'] text-[#2D2D2D]">Nenhum pet anunciado ainda</h4>
+                    <p className="text-sm text-[#6B7280] max-w-md mx-auto leading-relaxed">
+                        Você ainda não cadastrou nenhum amiguinho. Clique no botão abaixo para criar seu primeiro anúncio!
                     </p>
                 </div>
             ) : (
                 /* Grid de Cards */
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                     {pets.map((pet) => (
                         <PetListCard
                             key={pet.id}
@@ -83,15 +87,16 @@ export function MyPetsList() {
                             showActions={true}
                             onClick={() => setSelectedPet(pet)}
                             onEdit={(p) => setEditingPet(p)}
-                            onDelete={(p) => handleDeleteClick(p)} // 🟢 Chama o gatilho do modal
+                            onDelete={(p) => handleDeleteClick(p)}
                         />
                     ))}
                 </div>
             )}
+
             <div className="flex justify-center pt-2 my-10">
                 <button
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-amber-500/10 shrink-0"
+                    className="bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold px-5 py-3 rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:shadow-md shrink-0 text-sm"
                 >
                     <FaPlus className="w-4 h-4" />
                     Adicionar Pet
@@ -112,7 +117,7 @@ export function MyPetsList() {
                 onClose={handleCloseFormModal}
             />
 
-            {/* 🟢 3. Modal Bonito de Confirmação de Exclusão */}
+            {/* Modal Bonito de Confirmação de Exclusão */}
             <ConfirmModal
                 isOpen={Boolean(petToDelete)}
                 title={`Excluir "${petToDelete?.name}"?`}

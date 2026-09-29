@@ -65,11 +65,13 @@ export function NGOsList() {
     }
 
     return (
-        <section className="w-full">
+        <section className="w-full font-sans">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h3 className="text-3xl font-bold text-white mb-1">ONGs Parceiras</h3>
-                    <p className="text-sm text-gray-400">
+                    <h3 className="text-3xl font-bold font-['Manrope'] text-[#2D2D2D] mb-1 tracking-tight">
+                        ONGs Parceiras
+                    </h3>
+                    <p className="text-sm text-[#6B7280] leading-relaxed">
                         Conheça as instituições e abrigos parceiros do Adote2Pets que salvam vidas todos os dias
                     </p>
                 </div>
@@ -79,7 +81,7 @@ export function NGOsList() {
                     <button
                         onClick={handleOpenCreate}
                         type="button"
-                        className="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold px-4 py-2.5 rounded-xl transition shadow-lg cursor-pointer shrink-0"
+                        className="flex items-center justify-center gap-2 bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold px-4.5 py-3 rounded-2xl transition-all shadow-sm hover:shadow-md cursor-pointer shrink-0 text-sm"
                     >
                         <FaPlus className="w-4 h-4" /> Adicionar ONG
                     </button>
@@ -89,14 +91,16 @@ export function NGOsList() {
             {isLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                     {[1, 2, 3].map((n) => (
-                        <div key={n} className="bg-gray-800/40 border border-gray-700/60 rounded-2xl h-80 animate-pulse" />
+                        <div key={n} className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-3xl h-80 animate-pulse" />
                     ))}
                 </div>
             ) : ngos.length === 0 ? (
-                <div className="bg-gray-800/30 border border-gray-700/50 rounded-2xl p-12 text-center">
-                    <FaBuilding className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                    <h4 className="text-lg font-bold text-white mb-1">Nenhuma ONG cadastrada</h4>
-                    <p className="text-gray-400 text-sm">
+                <div className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-3xl p-12 text-center">
+                    <div className="w-16 h-16 bg-[#FF7A59]/10 rounded-2xl flex items-center justify-center mx-auto text-[#FF7A59] mb-3">
+                        <FaBuilding className="w-8 h-8" />
+                    </div>
+                    <h4 className="text-lg font-bold font-['Manrope'] text-[#2D2D2D] mb-1">Nenhuma ONG cadastrada</h4>
+                    <p className="text-[#6B7280] text-sm max-w-md mx-auto leading-relaxed">
                         {isAdmin
                             ? "Clique no botão 'Adicionar ONG' acima para cadastrar a primeira instituição."
                             : "Volte mais tarde para conferir as instituições parceiras cadastradas."}
@@ -108,28 +112,28 @@ export function NGOsList() {
                         <div
                             key={ngo.id}
                             onClick={() => setSelectedNGO(ngo)}
-                            className="bg-gray-800 border border-gray-700/80 rounded-2xl overflow-hidden hover:border-amber-500/50 transition cursor-pointer flex flex-col group relative shadow-md hover:shadow-xl"
+                            className="bg-[#FAFAF8] border border-[#E4E4E1] rounded-3xl overflow-hidden hover:border-[#FF7A59]/50 transition-all duration-300 cursor-pointer flex flex-col group relative shadow-xs hover:shadow-xl"
                         >
-                            <div className="relative w-full aspect-[4/5] sm:aspect-square bg-gray-900 flex items-center justify-center overflow-hidden">
+                            <div className="relative w-full aspect-[4/5] sm:aspect-square bg-[#F4F4F2] flex items-center justify-center overflow-hidden">
                                 <img
                                     src={ngo.image}
                                     alt={ngo.name}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                 />
                                 <div className="absolute top-3 left-3 z-10">
-                                    <span className="text-xs px-2.5 py-1 rounded-full bg-gray-950/70 backdrop-blur-md text-amber-400 font-medium border border-amber-500/30 shadow-sm">
+                                    <span className="text-xs px-3 py-1 rounded-full bg-[#FAFAF8]/90 backdrop-blur-md text-[#FF7A59] font-semibold border border-[#FF7A59]/20 shadow-xs">
                                         ONG
                                     </span>
                                 </div>
                             </div>
 
-                            <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between gap-2">
+                            <div className="p-4 flex-1 flex flex-col justify-between gap-2">
                                 <div className="flex items-start justify-between gap-2">
                                     <div>
-                                        <h3 className="text-base sm:text-lg font-bold text-white leading-snug group-hover:text-amber-400 transition-colors">
+                                        <h3 className="text-base sm:text-lg font-bold font-['Manrope'] text-[#2D2D2D] leading-snug group-hover:text-[#FF7A59] transition-colors line-clamp-1">
                                             {ngo.name}
                                         </h3>
-                                        <p className="text-xs text-gray-400 mt-0.5">
+                                        <p className="text-xs text-[#6B7280] font-medium mt-1">
                                             {ngo.city}
                                         </p>
                                     </div>
@@ -139,7 +143,7 @@ export function NGOsList() {
                                             <button
                                                 type="button"
                                                 onClick={(e) => handleOpenEdit(ngo, e)}
-                                                className="p-1.5 text-gray-400 hover:text-amber-400 hover:bg-gray-700/80 rounded-lg transition cursor-pointer"
+                                                className="p-2 text-[#6B7280] hover:text-[#FF7A59] hover:bg-[#F4F4F2] rounded-xl transition cursor-pointer"
                                                 title="Editar ONG"
                                             >
                                                 <FaPenToSquare className="w-4 h-4" />
@@ -147,7 +151,7 @@ export function NGOsList() {
                                             <button
                                                 type="button"
                                                 onClick={(e) => handleDeleteClick(ngo.id, e)}
-                                                className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-gray-700/80 rounded-lg transition cursor-pointer"
+                                                className="p-2 text-[#6B7280] hover:text-red-500 hover:bg-red-50 rounded-xl transition cursor-pointer"
                                                 title="Remover ONG"
                                             >
                                                 <FaTrash className="w-4 h-4" />
@@ -163,76 +167,79 @@ export function NGOsList() {
 
             {/* Modal de Detalhes da ONG */}
             {selectedNGO && (
-                <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn">
-                    <div className="bg-gray-800 border border-gray-700/80 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl relative text-gray-100 p-6 sm:p-8 space-y-6">
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+                    <div className="bg-[#FAFAF8] border border-[#E4E4E1] rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl relative text-[#2D2D2D] p-6 sm:p-8 space-y-6">
                         <button
                             onClick={() => setSelectedNGO(null)}
                             type="button"
-                            className="absolute top-5 right-5 bg-gray-900/70 hover:bg-gray-900 text-gray-300 hover:text-white p-2.5 rounded-xl transition cursor-pointer z-20 backdrop-blur-sm"
+                            className="absolute top-5 right-5 bg-[#F4F4F2] hover:bg-[#E4E4E1] text-[#6B7280] hover:text-[#2D2D2D] p-2.5 rounded-xl transition cursor-pointer z-20"
                             title="Fechar"
                         >
                             <FaXmark className="w-5 h-5" />
                         </button>
 
-                        <div className="relative w-full aspect-square bg-gray-900 rounded-2xl overflow-hidden shadow-inner">
+                        <div className="relative w-full aspect-square bg-[#F4F4F2] rounded-2xl overflow-hidden shadow-xs">
                             <img src={selectedNGO.image} alt={selectedNGO.name} className="w-full h-full object-cover" />
                         </div>
 
                         <div className="space-y-4">
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                                    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-[#FF7A59]/10 text-[#FF7A59] border border-[#FF7A59]/20">
                                         Instituição / ONG
                                     </span>
-                                    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-gray-700/50 text-gray-300">
+                                    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-[#F4F4F2] text-[#6B7280] border border-[#E4E4E1]">
                                         {selectedNGO.city}
                                     </span>
                                 </div>
-                                <h3 className="text-2xl font-bold text-white mt-2">{selectedNGO.name}</h3>
+                                <h3 className="text-2xl font-bold font-['Manrope'] text-[#2D2D2D] mt-2">{selectedNGO.name}</h3>
                                 {selectedNGO.description && (
-                                    <p className="text-sm text-gray-300 leading-relaxed mt-2">{selectedNGO.description}</p>
+                                    <p className="text-sm text-[#6B7280] leading-relaxed mt-2">{selectedNGO.description}</p>
                                 )}
                             </div>
 
-                            <div className="bg-gray-900/60 border border-gray-700/50 rounded-xl p-4 space-y-3">
-                                <div className="flex items-center gap-3 text-sm text-gray-200">
-                                    <div className="p-2 bg-amber-500/10 text-amber-400 rounded-lg shrink-0">
+                            <div className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-2xl p-4 space-y-3">
+                                <div className="flex items-center gap-3 text-sm text-[#2D2D2D]">
+                                    <div className="p-2 bg-[#FF7A59]/10 text-[#FF7A59] rounded-xl shrink-0">
                                         <FaPhone className="w-4 h-4" />
                                     </div>
                                     <span className="font-medium">{selectedNGO.phone}</span>
                                 </div>
-                                <div className="flex items-center gap-3 text-sm text-gray-200">
-                                    <div className="p-2 bg-amber-500/10 text-amber-400 rounded-lg shrink-0">
+                                <div className="flex items-center gap-3 text-sm text-[#2D2D2D]">
+                                    <div className="p-2 bg-[#FF7A59]/10 text-[#FF7A59] rounded-xl shrink-0">
                                         <FaGlobe className="w-4 h-4" />
                                     </div>
-                                    <a href={selectedNGO.website} target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:underline break-all">
+                                    <a href={selectedNGO.website} target="_blank" rel="noopener noreferrer" className="text-[#FF7A59] hover:underline break-all font-medium">
                                         {selectedNGO.website}
                                     </a>
                                 </div>
-                                <div className="flex items-center gap-3 text-sm text-gray-200">
-                                    <div className="p-2 bg-amber-500/10 text-amber-400 rounded-lg shrink-0">
+                                <div className="flex items-center gap-3 text-sm text-[#2D2D2D]">
+                                    <div className="p-2 bg-[#FF7A59]/10 text-[#FF7A59] rounded-xl shrink-0">
                                         <FaLocationDot className="w-4 h-4" />
                                     </div>
-                                    <span>{selectedNGO.city}</span>
+                                    <span className="font-medium">{selectedNGO.city}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <button onClick={() => setSelectedNGO(null)} className="w-full bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold py-3.5 rounded-xl transition cursor-pointer shadow-lg">
+                        <button
+                            onClick={() => setSelectedNGO(null)}
+                            className="w-full bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold py-3.5 rounded-2xl transition cursor-pointer shadow-sm text-sm"
+                        >
                             Fechar Informações
                         </button>
                     </div>
                 </div>
             )}
 
-            {/* Modal de Cadastro/Edição com o Cloudinary integrado */}
+            {/* Modal de Cadastro/Edição */}
             <CreateNgoModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 initialData={ngoToEdit}
             />
 
-            {/* Modal de Confirmação de Exclusão (Reutilizando o ConfirmModal) */}
+            {/* Modal de Confirmação de Exclusão */}
             <ConfirmModal
                 isOpen={Boolean(ngoToDeleteId)}
                 title="Excluir ONG parceira?"

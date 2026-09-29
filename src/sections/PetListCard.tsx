@@ -42,18 +42,18 @@ export function PetListCard({
   return (
     <div
       onClick={onClick}
-      className="bg-gray-800 border border-gray-700/80 rounded-2xl overflow-hidden hover:border-amber-500/50 transition cursor-pointer flex flex-col group relative shadow-md hover:shadow-xl"
+      className="bg-[#FAFAF8] border border-[#E4E4E1] rounded-3xl overflow-hidden hover:border-[#FF7A59]/50 transition-all duration-300 cursor-pointer flex flex-col group relative shadow-xs hover:shadow-xl font-sans"
     >
       {/* Container da Imagem com Carrossel */}
-      <div className="relative w-full aspect-[4/5] sm:aspect-square bg-gray-900 flex items-center justify-center overflow-hidden">
+      <div className="relative w-full aspect-[4/5] sm:aspect-square bg-[#F4F4F2] flex items-center justify-center overflow-hidden">
         {photos.length > 0 ? (
           <img
             src={photos[currentPhotoIndex]}
             alt={pet.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <FaPaw className="w-16 h-16 text-gray-700" />
+          <FaPaw className="w-16 h-16 text-[#E4E4E1]" />
         )}
 
         {/* Setas de Navegação (Aparecem no hover e apenas se houver mais de 1 foto) */}
@@ -62,7 +62,7 @@ export function PetListCard({
             <button
               type="button"
               onClick={handlePrevPhoto}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-pointer backdrop-blur-sm"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 bg-[#2D2D2D]/60 hover:bg-[#2D2D2D]/80 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-pointer backdrop-blur-sm"
               title="Foto anterior"
             >
               <FaChevronLeft className="w-3.5 h-3.5" />
@@ -71,7 +71,7 @@ export function PetListCard({
             <button
               type="button"
               onClick={handleNextPhoto}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-pointer backdrop-blur-sm"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 bg-[#2D2D2D]/60 hover:bg-[#2D2D2D]/80 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-pointer backdrop-blur-sm"
               title="Próxima foto"
             >
               <FaChevronRight className="w-3.5 h-3.5" />
@@ -83,8 +83,8 @@ export function PetListCard({
                 <span
                   key={idx}
                   className={`h-1.5 rounded-full transition-all ${currentPhotoIndex === idx
-                      ? "w-4 bg-amber-400"
-                      : "w-1.5 bg-white/50"
+                      ? "w-4 bg-[#FF7A59]"
+                      : "w-1.5 bg-white/70"
                     }`}
                 />
               ))}
@@ -94,20 +94,20 @@ export function PetListCard({
 
         {/* Tag de Status Flutuante sobre a Foto */}
         <div className="absolute top-3 left-3 z-10">
-          <span className="text-xs px-2.5 py-1 rounded-full bg-gray-950/70 backdrop-blur-md text-amber-400 font-medium border border-amber-500/30 shadow-sm">
+          <span className="text-xs px-3 py-1 rounded-full bg-[#FAFAF8]/90 backdrop-blur-md text-[#FF7A59] font-semibold border border-[#FF7A59]/20 shadow-xs">
             {pet.status === "available" ? "Disponível" : pet.status}
           </span>
         </div>
       </div>
 
       {/* Conteúdo / Rodapé do Card */}
-      <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between gap-2">
+      <div className="p-4 flex-1 flex flex-col justify-between gap-2">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h3 className="text-base sm:text-lg font-bold text-white leading-snug group-hover:text-amber-400 transition-colors">
+            <h3 className="text-base sm:text-lg font-bold font-['Manrope'] text-[#2D2D2D] leading-snug group-hover:text-[#FF7A59] transition-colors line-clamp-1">
               {pet.name}
             </h3>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-[#6B7280] font-medium mt-1">
               {pet.breed || "Sem raça definida"}
               {formattedAge ? ` • ${formattedAge}` : ""}
             </p>
@@ -123,7 +123,7 @@ export function PetListCard({
                     e.stopPropagation();
                     onEdit(pet);
                   }}
-                  className="p-1.5 text-gray-400 hover:text-amber-400 hover:bg-gray-700/80 rounded-lg transition cursor-pointer"
+                  className="p-2 text-[#6B7280] hover:text-[#FF7A59] hover:bg-[#F4F4F2] rounded-xl transition cursor-pointer"
                   title="Editar pet"
                 >
                   <FaPenToSquare className="w-4 h-4" />
@@ -137,7 +137,7 @@ export function PetListCard({
                     e.stopPropagation();
                     onDelete(pet);
                   }}
-                  className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-gray-700/80 rounded-lg transition cursor-pointer"
+                  className="p-2 text-[#6B7280] hover:text-red-500 hover:bg-red-50 rounded-xl transition cursor-pointer"
                   title="Remover pet"
                 >
                   <FaTrash className="w-4 h-4" />

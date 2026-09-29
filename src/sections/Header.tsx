@@ -10,6 +10,8 @@ import {
   FaHeart,
   FaUser,
   FaGear,
+  FaBars,
+  FaXmark,
 } from "react-icons/fa6";
 import { useAuth } from "../hooks/useAuth";
 import { AuthModal } from "../modals/AuthModal";
@@ -21,21 +23,25 @@ export function Header() {
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isCreatePetModalOpen, setIsCreatePetModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<"signin" | "signup">("signin");
 
   const isAuthenticated = Boolean(session);
 
   function handleLogout() {
     remove();
+    setIsMobileMenuOpen(false);
     navigate("/");
   }
 
   function openModal(mode: "signin" | "signup") {
     setAuthModalMode(mode);
     setIsAuthModalOpen(true);
+    setIsMobileMenuOpen(false);
   }
 
   function handleAnnouncePet() {
+    setIsMobileMenuOpen(false);
     if (isAuthenticated) {
       setIsCreatePetModalOpen(true);
     } else {
@@ -43,28 +49,29 @@ export function Header() {
     }
   }
 
+  // Estilização dos links seguindo os tokens oficiais (Coral Afeto & Neutros)
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
-      ? "bg-amber-500/15 text-amber-400 font-semibold border border-amber-500/30"
-      : "text-gray-300 hover:text-white hover:bg-gray-700/50"
+    `flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all duration-200 md:px-3 md:py-2 ${isActive
+      ? "bg-[#FF7A59]/10 text-[#FF7A59] font-semibold border border-[#FF7A59]/20 shadow-xs"
+      : "text-[#6B7280] hover:text-[#2D2D2D] hover:bg-[#F4F4F2]"
     }`;
 
   return (
     <>
-      <header className="w-full bg-gray-800/80 backdrop-blur-md border-b border-gray-700/60 sticky top-0 z-40">
+      <header className="w-full bg-[#FAFAF8]/95 backdrop-blur-md border-b border-[#E4E4E1] sticky top-0 z-40 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 gap-4">
+          <div className="flex items-center justify-between h-20 gap-4">
 
-            {/* Logo */}
-            <NavLink to="/" className="flex items-center gap-2 text-amber-400 font-bold text-xl group">
-              <div className="p-2 bg-amber-500/10 rounded-xl group-hover:bg-amber-500/20 transition-colors">
-                <FaPaw className="w-5 h-5 text-amber-400" />
+            {/* Logo da Marca */}
+            <NavLink to="/" className="flex items-center gap-2.5 text-[#2D2D2D] font-bold text-xl group">
+              <div className="p-2.5 bg-[#FF7A59]/10 rounded-2xl group-hover:bg-[#FF7A59]/20 transition-colors text-[#FF7A59]">
+                <FaPaw className="w-5 h-5" />
               </div>
-              <span className="text-white">Adote 2 Pets</span>
+              <span className="font-['Manrope'] tracking-tight">Adote 2 Pets</span>
             </NavLink>
 
-            {/* Menu Padrão (100% Público para todos os usuários) */}
-            <nav className="hidden md:flex items-center gap-1">
+            {/* Menu Desktop */}
+            <nav className="hidden md:flex items-center gap-1.5">
               <NavLink to="/pets" className={navLinkClass}>
                 <FaHeart className="w-4 h-4" />
                 <span>Adotar</span>
@@ -83,78 +90,187 @@ export function Header() {
               </NavLink>
             </nav>
 
-            {/* Bloco de Ações do Usuário (Lado Direito) */}
-            <div className="flex items-center gap-3">
+            {/* Ações do Utilizador (Lado Direito - Desktop) */}
+            <div className="hidden md:flex items-center gap-3">
               {isAuthenticated ? (
-                /* ÁREA PRIVADA: Agrupa Meus Pets, Anunciar, Usuário e Sair */
-                <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-3">
                   <NavLink to="/meus-pets" className={navLinkClass}>
                     <FaPaw className="w-4 h-4" />
-                    <span className="hidden sm:inline">Meus Pets</span>
+                    <span>Meus Pets</span>
                   </NavLink>
 
-                  {/* Botão de Anunciar Pet abrindo o Modal */}
                   <button
                     onClick={handleAnnouncePet}
-                    className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold px-3.5 py-2 rounded-lg text-sm transition shadow-sm hover:shadow-amber-500/20 cursor-pointer"
+                    className="flex items-center gap-2 bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold px-4 py-2.5 rounded-2xl text-sm transition-all shadow-sm hover:shadow-md cursor-pointer"
                   >
                     <FaPlus className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Adicionar Pet</span>
+                    <span>Adicionar Pet</span>
                   </button>
 
-                  <div className="flex items-center gap-2 pl-2 border-l border-gray-700/60">
-                    {/* Link do nome do usuário e botão de configurações */}
+                  <div className="flex items-center gap-2 pl-2 border-l border-[#E4E4E1]">
                     <NavLink
                       to="/settings"
                       title="Editar dados e configurações"
-                      className="flex items-center gap-1.5 text-xs text-gray-300 font-medium hover:text-amber-400 transition-colors group px-2 py-1 rounded-lg hover:bg-gray-700/50"
+                      className="flex items-center gap-1.5 text-xs text-[#6B7280] font-medium hover:text-[#FF7A59] transition-colors group px-2 py-1.5 rounded-xl hover:bg-[#F4F4F2]"
                     >
-                      <span className="max-w-[100px] truncate">
-                        {session?.user?.name || "Usuário"}
+                      <span className="max-w-[140px] truncate text-[#2D2D2D] font-medium text-xs font-sans">
+                        {session?.user?.name || "Utilizador"}
                       </span>
-                      <FaGear className="w-3.5 h-3.5 text-gray-400 group-hover:text-amber-400 group-hover:rotate-90 transition-all duration-300" />
+                      <FaGear className="w-3.5 h-3.5 text-[#6B7280] group-hover:text-[#FF7A59] group-hover:rotate-90 transition-all duration-300" />
                     </NavLink>
 
                     <button
                       onClick={handleLogout}
                       title="Sair da conta"
-                      className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition cursor-pointer"
+                      className="p-2 text-[#6B7280] hover:text-red-500 hover:bg-red-50 rounded-xl transition cursor-pointer"
                     >
                       <FaRightFromBracket className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
               ) : (
-                /* ÁREA PÚBLICA: Exibe o botão Entrar */
                 <button
                   onClick={() => openModal("signin")}
-                  className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white font-medium px-3.5 py-2 rounded-lg text-sm transition cursor-pointer"
+                  className="flex items-center gap-2 bg-[#F4F4F2] hover:bg-[#E4E4E1] text-[#2D2D2D] font-medium px-4 py-2.5 rounded-2xl text-sm transition cursor-pointer border border-[#E4E4E1]"
                 >
-                  <FaUser className="w-3.5 h-3.5" />
+                  <FaUser className="w-3.5 h-3.5 text-[#FF7A59]" />
                   <span>Entrar</span>
+                </button>
+              )}
+            </div>
+
+            {/* Botão do Menu Hambúrguer (Mobile) */}
+            <div className="flex items-center gap-2 md:hidden">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2.5 text-[#2D2D2D] bg-[#F4F4F2] hover:bg-[#E4E4E1] rounded-2xl border border-[#E4E4E1] transition cursor-pointer"
+                aria-label="Abrir Menu"
+              >
+                {isMobileMenuOpen ? <FaXmark className="w-5 h-5 text-[#FF7A59]" /> : <FaBars className="w-5 h-5" />}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </header>
+
+      {/* Menu Drawer / Overlay Mobile */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex flex-col">
+          {/* Backdrop Escurecido */}
+          <div
+            className="fixed inset-0 bg-[#2D2D2D]/40 backdrop-blur-xs transition-opacity"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+
+          {/* Painel do Menu Deslizante */}
+          <div className="relative bg-[#FAFAF8] w-full max-w-sm ml-auto h-full shadow-2xl flex flex-col z-10 border-l border-[#E4E4E1] animate-in slide-in-from-right duration-300">
+
+            {/* Cabeçalho do Drawer */}
+            <div className="flex items-center justify-between p-5 border-b border-[#E4E4E1]">
+              <div className="flex items-center gap-2 font-bold text-[#2D2D2D]">
+                <div className="p-2 bg-[#FF7A59]/10 rounded-xl text-[#FF7A59]">
+                  <FaPaw className="w-4 h-4" />
+                </div>
+                <span className="font-['Manrope'] text-base">Menu de Navegação</span>
+              </div>
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-2 text-[#6B7280] hover:text-[#2D2D2D] hover:bg-[#F4F4F2] rounded-xl transition"
+              >
+                <FaXmark className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Corpo de Links do Menu */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-2">
+              <div onClick={() => setIsMobileMenuOpen(false)}>
+                <NavLink to="/pets" className={navLinkClass}>
+                  <FaHeart className="w-4 h-4 text-[#FF7A59]" />
+                  <span>Adotar um Pet</span>
+                </NavLink>
+              </div>
+              <div onClick={() => setIsMobileMenuOpen(false)}>
+                <NavLink to="/perdidos" className={navLinkClass}>
+                  <FaMagnifyingGlassLocation className="w-4 h-4 text-[#FF7A59]" />
+                  <span>Pets Perdidos</span>
+                </NavLink>
+              </div>
+              <div onClick={() => setIsMobileMenuOpen(false)}>
+                <NavLink to="/ongs" className={navLinkClass}>
+                  <FaBuildingNgo className="w-4 h-4 text-[#FF7A59]" />
+                  <span>ONGs Parceiras</span>
+                </NavLink>
+              </div>
+              <div onClick={() => setIsMobileMenuOpen(false)}>
+                <NavLink to="/clinicas" className={navLinkClass}>
+                  <FaKitMedical className="w-4 h-4 text-[#FF7A59]" />
+                  <span>Clínicas Veterinárias</span>
+                </NavLink>
+              </div>
+
+              {isAuthenticated && (
+                <div onClick={() => setIsMobileMenuOpen(false)}>
+                  <NavLink to="/meus-pets" className={navLinkClass}>
+                    <FaPaw className="w-4 h-4 text-[#FF7A59]" />
+                    <span>Meus Pets Cadastrados</span>
+                  </NavLink>
+                </div>
+              )}
+            </div>
+
+            {/* Rodapé do Drawer com Ações de Conta */}
+            <div className="p-5 border-t border-[#E4E4E1] bg-[#F4F4F2] space-y-3">
+              {isAuthenticated ? (
+                <>
+                  <button
+                    onClick={handleAnnouncePet}
+                    className="w-full flex items-center justify-center gap-2 bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold py-3 rounded-2xl text-sm transition shadow-sm cursor-pointer"
+                  >
+                    <FaPlus className="w-4 h-4" />
+                    <span>Adicionar Novo Pet</span>
+                  </button>
+
+                  <div className="flex items-center justify-between pt-2">
+                    <NavLink
+                      to="/settings"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-2 text-xs font-medium text-[#6B7280] hover:text-[#FF7A59]"
+                    >
+                      <FaGear className="w-3.5 h-3.5" />
+                      <span>{session?.user?.name || "Minha Conta"}</span>
+                    </NavLink>
+
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-red-600 p-2"
+                    >
+                      <FaRightFromBracket className="w-3.5 h-3.5" />
+                      <span>Sair</span>
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <button
+                  onClick={() => openModal("signin")}
+                  className="w-full flex items-center justify-center gap-2 bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold py-3 rounded-2xl text-sm transition shadow-sm cursor-pointer"
+                >
+                  <FaUser className="w-4 h-4" />
+                  <span>Entrar / Cadastrar-se</span>
                 </button>
               )}
             </div>
 
           </div>
         </div>
+      )}
 
-        {/* Menu Mobile Público */}
-        <nav className="md:hidden flex items-center justify-between gap-1 py-2 px-4 border-t border-gray-700/40 text-xs overflow-x-auto">
-          <NavLink to="/pets" className={navLinkClass}>Explorar</NavLink>
-          <NavLink to="/perdidos" className={navLinkClass}>Perdidos</NavLink>
-          <NavLink to="/ongs" className={navLinkClass}>OnGs</NavLink>
-          <NavLink to="/clinicas" className={navLinkClass}>Clínicas</NavLink>
-        </nav>
-      </header>
-
-      {/* Modal de Cadastrar Pet */}
+      {/* Modais da Aplicação */}
       <CreatePetModal
         isOpen={isCreatePetModalOpen}
         onClose={() => setIsCreatePetModalOpen(false)}
       />
 
-      {/* Modal de Login / Registro */}
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}

@@ -63,26 +63,28 @@ export function PetList() {
   }
 
   if (isPending) {
-    return <p className="text-center py-12 text-gray-300">Carregando pets...</p>;
+    return <p className="text-center py-12 text-[#6B7280] font-sans">Carregando pets...</p>;
   }
 
   if (isError) {
-    return <p className="text-center py-12 text-red-400">Erro ao carregar pets.</p>;
+    return <p className="text-center py-12 text-red-500 font-sans">Erro ao carregar pets.</p>;
   }
 
   return (
-    <section id="pets" className="w-full">
+    <section id="pets" className="w-full font-sans">
       {/* Título */}
       <div className="mb-6">
-        <h3 className="text-3xl font-bold text-white mb-1">Pets Disponíveis</h3>
-        <p className="text-sm text-gray-400">
+        <h3 className="text-3xl font-bold font-['Manrope'] text-[#2D2D2D] mb-1 tracking-tight">
+          Pets Disponíveis
+        </h3>
+        <p className="text-sm text-[#6B7280]">
           Encontre seu novo amigo e agende um match de adoção
         </p>
       </div>
 
       {/* Caixa de Filtros */}
-      <div className="bg-gray-800/80 border border-gray-700/60 rounded-xl p-4 shadow-lg mb-8">
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3 block">
+      <div className="bg-[#FAFAF8] border border-[#E4E4E1] rounded-2xl p-4 shadow-sm mb-8">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-[#6B7280] mb-3 block">
           Filtrar Pets
         </h4>
 
@@ -91,7 +93,7 @@ export function PetList() {
             name="species"
             value={filters.species}
             onChange={handleFilterChange}
-            className="bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-amber-500 transition"
+            className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-xl px-3 py-2.5 text-sm text-[#2D2D2D] focus:outline-none focus:border-[#FF7A59] transition cursor-pointer"
           >
             <option value="">Espécie</option>
             <option value={Species.DOG}>Cachorro</option>
@@ -103,7 +105,7 @@ export function PetList() {
             name="size"
             value={filters.size}
             onChange={handleFilterChange}
-            className="bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-amber-500 transition"
+            className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-xl px-3 py-2.5 text-sm text-[#2D2D2D] focus:outline-none focus:border-[#FF7A59] transition cursor-pointer"
           >
             <option value="">Tamanho</option>
             <option value={PetSize.SMALL}>Pequeno</option>
@@ -115,7 +117,7 @@ export function PetList() {
             name="sex"
             value={filters.sex}
             onChange={handleFilterChange}
-            className="bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-amber-500 transition"
+            className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-xl px-3 py-2.5 text-sm text-[#2D2D2D] focus:outline-none focus:border-[#FF7A59] transition cursor-pointer"
           >
             <option value="">Sexo</option>
             <option value={PetSex.MALE}>Macho</option>
@@ -126,7 +128,7 @@ export function PetList() {
             name="age"
             value={filters.age}
             onChange={handleFilterChange}
-            className="bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-amber-500 transition"
+            className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-xl px-3 py-2.5 text-sm text-[#2D2D2D] focus:outline-none focus:border-[#FF7A59] transition cursor-pointer"
           >
             <option value="">Idade</option>
             <option value="0-2">0–2 anos</option>
@@ -137,7 +139,7 @@ export function PetList() {
 
           <button
             onClick={resetFilters}
-            className="bg-gray-700 hover:bg-gray-600 text-gray-200 text-sm font-semibold rounded-lg px-4 py-2 border border-gray-600 transition cursor-pointer"
+            className="bg-[#F4F4F2] hover:bg-[#E4E4E1] text-[#2D2D2D] text-sm font-semibold rounded-xl px-4 py-2.5 border border-[#E4E4E1] transition cursor-pointer"
           >
             Limpar Filtros
           </button>
@@ -146,7 +148,7 @@ export function PetList() {
 
       {/* Grid de Cards */}
       <div
-        className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-opacity ${isFetching ? "opacity-50" : "opacity-100"
+        className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 transition-opacity ${isFetching ? "opacity-50" : "opacity-100"
           }`}
       >
         {pets.map((pet: Pet) => (

@@ -20,9 +20,8 @@ export function PetDetailModal({
     showContactButton = true,
 }: PetDetailModalProps) {
     const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
-    const [isFullScreen, setIsFullScreen] = useState(false); // 🟢 Estado para controlar a tela cheia da foto
+    const [isFullScreen, setIsFullScreen] = useState(false);
 
-    // 🟢 Fecha o fullscreen com Esc se estiver aberto, senão fecha o modal
     useEscapeKey(() => {
         if (isFullScreen) {
             setIsFullScreen(false);
@@ -66,15 +65,15 @@ export function PetDetailModal({
     const formattedAge = formatAge(pet.age);
 
     return (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-fadeIn">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 animate-fadeIn font-sans">
             {/* Container Principal do Modal */}
-            <div className="bg-gray-800 border border-gray-700/80 rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl relative text-gray-100 p-8 sm:p-10 space-y-6 max-h-[92vh] overflow-y-auto">
+            <div className="bg-[#FAFAF8] border border-[#E4E4E1] rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl relative text-[#2D2D2D] p-6 sm:p-8 space-y-6 max-h-[92vh] overflow-y-auto">
 
                 {/* Botão Fechar Modal */}
                 <button
                     onClick={onClose}
                     type="button"
-                    className="absolute top-5 right-5 bg-gray-900/70 hover:bg-gray-900 text-gray-300 hover:text-white p-2.5 rounded-xl transition cursor-pointer z-20 backdrop-blur-sm shadow-md"
+                    className="absolute top-5 right-5 bg-[#F4F4F2] hover:bg-[#E4E4E1] text-[#6B7280] hover:text-[#2D2D2D] p-2.5 rounded-xl transition cursor-pointer z-20 shadow-xs"
                     title="Fechar (Esc)"
                 >
                     <FaXmark className="w-5 h-5" />
@@ -83,7 +82,7 @@ export function PetDetailModal({
                 {/* Foto do Pet em Destaque (Clicável para expandir) */}
                 <div
                     onClick={() => activePhoto && setIsFullScreen(true)}
-                    className="relative w-full aspect-[16/10] bg-gray-900 rounded-2xl overflow-hidden flex items-center justify-center border border-gray-700/50 group shadow-inner cursor-zoom-in"
+                    className="relative w-full aspect-[16/10] bg-[#F4F4F2] rounded-2xl overflow-hidden flex items-center justify-center border border-[#E4E4E1] group shadow-inner cursor-zoom-in"
                     title="Clique para ver a foto em tela cheia"
                 >
                     {activePhoto ? (
@@ -93,13 +92,13 @@ export function PetDetailModal({
                             className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
                         />
                     ) : (
-                        <FaPaw className="w-20 h-20 text-gray-700" />
+                        <FaPaw className="w-20 h-20 text-[#6B7280]" />
                     )}
 
                     {/* Ícone indicativo de zoom no hover */}
                     {activePhoto && (
-                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <span className="bg-black/70 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-lg">
+                        <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <span className="bg-black/75 backdrop-blur-md text-white text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-lg font-medium">
                                 <FaMaximize className="w-3.5 h-3.5" /> Ampliar foto
                             </span>
                         </div>
@@ -131,9 +130,9 @@ export function PetDetailModal({
                                 {allPhotos.map((_, idx) => (
                                     <span
                                         key={idx}
-                                        className={`h-2 rounded-full transition-all shadow-md ${selectedPhotoIndex === idx
-                                            ? "w-6 bg-amber-400"
-                                            : "w-2 bg-white/50 hover:bg-white/80"
+                                        className={`h-2 rounded-full transition-all shadow-xs ${selectedPhotoIndex === idx
+                                            ? "w-6 bg-[#FF7A59]"
+                                            : "w-2 bg-white/60 hover:bg-white"
                                             }`}
                                     />
                                 ))}
@@ -149,9 +148,9 @@ export function PetDetailModal({
                             <button
                                 key={idx}
                                 onClick={() => setSelectedPhotoIndex(idx)}
-                                className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition shrink-0 cursor-pointer shadow-md ${selectedPhotoIndex === idx
-                                    ? "border-amber-500 scale-105 shadow-amber-500/20"
-                                    : "border-gray-700 opacity-60 hover:opacity-100"
+                                className={`w-20 h-20 rounded-2xl overflow-hidden border-2 transition shrink-0 cursor-pointer shadow-xs ${selectedPhotoIndex === idx
+                                    ? "border-[#FF7A59] scale-105 shadow-[#FF7A59]/20"
+                                    : "border-[#E4E4E1] opacity-60 hover:opacity-100"
                                     }`}
                             >
                                 <img src={photoUrl} alt="" className="w-full h-full object-cover" />
@@ -161,30 +160,30 @@ export function PetDetailModal({
                 )}
 
                 {/* Cabeçalho */}
-                <div className="flex items-start justify-between border-b border-gray-700/60 pb-5 gap-4">
+                <div className="flex items-start justify-between border-b border-[#E4E4E1] pb-5 gap-4">
                     <div>
-                        <h2 className="text-3xl font-bold text-white tracking-tight">{pet.name}</h2>
-                        <p className="text-sm text-gray-400 mt-1">
+                        <h2 className="text-3xl font-bold font-['Manrope'] text-[#2D2D2D] tracking-tight">{pet.name}</h2>
+                        <p className="text-sm text-[#6B7280] mt-1">
                             {pet.breed || "Sem raça definida"} {formattedAge ? `• ${formattedAge}` : ""}
                         </p>
                     </div>
-                    <span className="text-xs font-semibold px-3.5 py-1.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
+                    <span className="text-xs font-semibold px-4 py-2 rounded-xl bg-[#FF7A59]/10 text-[#FF7A59] border border-[#FF7A59]/20 shrink-0">
                         {pet.status === "available" ? "Disponível para Adoção" : pet.status}
                     </span>
                 </div>
 
                 {/* Sobre e Ação */}
                 {pet.description && (
-                    <div className="bg-gray-900/50 border border-gray-700/40 p-5 rounded-2xl space-y-2">
-                        <h4 className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Sobre o pet</h4>
-                        <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-line">{pet.description}</p>
+                    <div className="bg-[#F4F4F2] border border-[#E4E4E1] p-5 rounded-2xl space-y-2">
+                        <h4 className="text-xs font-bold text-[#FF7A59] uppercase tracking-wider">Sobre o pet</h4>
+                        <p className="text-sm text-[#2D2D2D] leading-relaxed whitespace-pre-line">{pet.description}</p>
                     </div>
                 )}
 
                 {showContactButton && (
                     <button
                         onClick={handleContactTutor}
-                        className="w-full bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold py-4 rounded-xl transition cursor-pointer shadow-lg shadow-amber-500/10 text-base"
+                        className="w-full bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold py-4 rounded-2xl transition cursor-pointer shadow-sm text-base"
                     >
                         Entrar em contato com tutor
                     </button>
@@ -192,11 +191,11 @@ export function PetDetailModal({
 
             </div>
 
-            {/* 🟢 MODAL DE TELA CHEIA (LIGHTBOX) */}
+            {/* MODAL DE TELA CHEIA (LIGHTBOX) */}
             {isFullScreen && activePhoto && (
                 <div
                     onClick={() => setIsFullScreen(false)}
-                    className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-lg flex items-center justify-center p-4 sm:p-8 animate-fadeIn cursor-zoom-out"
+                    className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-8 animate-fadeIn cursor-zoom-out"
                 >
                     {/* Botão Fechar Tela Cheia */}
                     <button
@@ -213,7 +212,7 @@ export function PetDetailModal({
                         <img
                             src={activePhoto}
                             alt={pet.name}
-                            className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl border border-white/10"
+                            className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl border border-white/10"
                         />
 
                         {/* Setas de navegação na tela cheia */}
