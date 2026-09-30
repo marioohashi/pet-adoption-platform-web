@@ -17,7 +17,7 @@ export function AppRoutes() {
             <Routes>
                 <Route element={<AppLayout />}>
 
-                    <Route path="/" element={<Navigate to="/pets" replace />} />
+                    <Route path="/" element={<PetList />} />
                     <Route path="/pets" element={<PetList />} />
                     <Route path="/perdidos" element={<LostPets />} />
                     <Route path="/ongs" element={<NGOsList />} />
