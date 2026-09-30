@@ -15,7 +15,7 @@ import {
 } from "react-icons/fa6";
 import { useAuth } from "../hooks/useAuth";
 import { AuthModal } from "../modals/AuthModal";
-import { PetFormModal } from "../modals/PetFormModal"; // Importe o modal unificado de pet que criamos
+import { PetFormModal } from "../modals/PetFormModal";
 
 
 
@@ -77,7 +77,7 @@ export function Header() {
               </NavLink>
               <NavLink to="/perdidos" className={navLinkClass}>
                 <FaMagnifyingGlassLocation className="w-3.5 h-3.5" />
-                <span>Perdidos e Achados</span>
+                <span>Procura-se</span>
               </NavLink>
               <NavLink to="/ongs" className={navLinkClass}>
                 <FaBuildingNgo className="w-3.5 h-3.5" />
@@ -109,7 +109,7 @@ export function Header() {
 
                   <div className="flex items-center gap-1.5 pl-2 border-l border-[#E4E4E1]">
                     <NavLink
-                      to="/settings"
+                      to="/minha-conta"
                       title="Editar dados e configurações"
                       className="flex items-center gap-1 text-xs text-[#6B7280] font-medium hover:text-[#FF7A59] transition-colors group px-2 py-1.5 rounded-xl hover:bg-[#F4F4F2]"
                     >

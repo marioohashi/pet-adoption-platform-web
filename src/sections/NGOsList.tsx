@@ -1,11 +1,7 @@
 import { useState } from "react";
-import { FaPhone, FaGlobe, FaLocationDot, FaXmark, FaPlus, FaPenToSquare, FaTrash } from "react-icons/fa6";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { FaPhone, FaGlobe, FaLocationDot, FaXmark } from "react-icons/fa6";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "../services/api";
-import { useAuth } from "../hooks/useAuth";
-import { CreateNgoModal } from "../modals/CreateNgoModal";
-import { ConfirmModal } from "../modals/ConfirmModal";
-
 interface NGO {
     id: string;
     name: string;
@@ -47,15 +43,8 @@ const MOCK_NGOS: NGO[] = [
 ];
 
 export function NGOsList() {
-    const { isAdmin } = useAuth();
-    const queryClient = useQueryClient();
 
     const [selectedNGO, setSelectedNGO] = useState<NGO | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [ngoToEdit, setNgoToEdit] = useState<NGO | null>(null);
-    const [ngoToDeleteId, setNgoToDeleteId] = useState<string | null>(null);
-
-    // Busca as ONGs da API com Fallback para Mock
     const { data: rawNgos = [], isLoading } = useQuery<NGO[]>({
         queryKey: ["ngos"],
         queryFn: async () => {
@@ -70,35 +59,7 @@ export function NGOsList() {
 
     const ngos = rawNgos.length > 0 ? rawNgos : MOCK_NGOS;
 
-    function handleOpenCreate() {
-        setNgoToEdit(null);
-        setIsModalOpen(true);
-    }
 
-    function handleOpenEdit(ngo: NGO, e: React.MouseEvent) {
-        e.stopPropagation();
-        setNgoToEdit(ngo);
-        setIsModalOpen(true);
-    }
-
-    function handleDeleteClick(ngoId: string, e: React.MouseEvent) {
-        e.stopPropagation();
-        setNgoToDeleteId(ngoId);
-    }
-
-    async function confirmDelete() {
-        if (!ngoToDeleteId) return;
-
-        try {
-            if (!ngoToDeleteId.startsWith("mock-")) {
-                await api.delete(`/ngos/${ngoToDeleteId}`);
-            }
-            queryClient.invalidateQueries({ queryKey: ["ngos"] });
-            setNgoToDeleteId(null);
-        } catch (error) {
-            alert("Erro ao remover a ONG.");
-        }
-    }
 
     return (
         <section className="w-full font-sans">
@@ -112,15 +73,6 @@ export function NGOsList() {
                     </p>
                 </div>
 
-                {isAdmin && (
-                    <button
-                        onClick={handleOpenCreate}
-                        type="button"
-                        className="flex items-center justify-center gap-2 bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold px-4.5 py-3 rounded-2xl transition-all shadow-sm hover:shadow-md cursor-pointer shrink-0 text-sm"
-                    >
-                        <FaPlus className="w-4 h-4" /> Adicionar ONG
-                    </button>
-                )}
             </div>
 
             {isLoading ? (
@@ -160,27 +112,6 @@ export function NGOsList() {
                                             {ngo.city}
                                         </p>
                                     </div>
-
-                                    {isAdmin && (
-                                        <div className="flex items-center gap-1 shrink-0 z-10">
-                                            <button
-                                                type="button"
-                                                onClick={(e) => handleOpenEdit(ngo, e)}
-                                                className="p-2 text-[#6B7280] hover:text-[#FF7A59] hover:bg-[#F4F4F2] rounded-xl transition cursor-pointer"
-                                                title="Editar ONG"
-                                            >
-                                                <FaPenToSquare className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={(e) => handleDeleteClick(ngo.id, e)}
-                                                className="p-2 text-[#6B7280] hover:text-red-500 hover:bg-red-50 rounded-xl transition cursor-pointer"
-                                                title="Remover ONG"
-                                            >
-                                                <FaTrash className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         </div>
@@ -188,7 +119,6 @@ export function NGOsList() {
                 </div>
             )}
 
-            {/* Modal de Detalhes da ONG */}
             {selectedNGO && (
                 <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
                     <div className="bg-[#FAFAF8] border border-[#E4E4E1] rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl relative text-[#2D2D2D] p-6 sm:p-8 space-y-6">
@@ -255,21 +185,6 @@ export function NGOsList() {
                 </div>
             )}
 
-            <CreateNgoModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                initialData={ngoToEdit}
-            />
-
-            <ConfirmModal
-                isOpen={Boolean(ngoToDeleteId)}
-                title="Excluir ONG parceira?"
-                message="Tem certeza que deseja remover esta instituição do banco de dados? Esta ação não poderá ser desfeita."
-                confirmText="Sim, excluir"
-                cancelText="Cancelar"
-                onConfirm={confirmDelete}
-                onCancel={() => setNgoToDeleteId(null)}
-            />
         </section>
     );
 }

@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { FaXmark, FaLocationDot, FaCalendarDay, FaWhatsapp, FaChevronLeft, FaChevronRight, FaPaw, FaExpand } from "react-icons/fa6";
+import { FaXmark, FaLocationDot, FaCalendarDay, FaWhatsapp, FaChevronLeft, FaChevronRight, FaPaw, FaExpand, FaCircleCheck } from "react-icons/fa6";
 import { formatAge } from "../utils/formatAge";
 import { PET_TYPES } from "../utils/petEnums";
 import type { Pet } from "../types";
+import { useEscapeKey } from "../hooks/useEscapeKey";
+import { formatDate } from "../utils/formatDate"
 
 interface PetDetailModalProps {
     pet: Pet | null;
@@ -14,18 +16,52 @@ export function PetDetailModal({ pet, isOpen, onClose }: PetDetailModalProps) {
     const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
     const [isFullScreen, setIsFullScreen] = useState(false);
 
+    useEscapeKey(() => {
+        if (isFullScreen) {
+            setIsFullScreen(false);
+        } else {
+            onClose();
+        }
+    }, isOpen);
+
     if (!isOpen || !pet) return null;
 
-    // Normaliza todas as fotos possíveis do pet em um array único
     const photos =
         pet.photos && pet.photos.length > 0 ? pet.photos :
             pet.photo ? [pet.photo] : [];
 
     const hasMultiplePhotos = photos.length > 1;
 
-    const isOccurrence = pet.type === "lost" || pet.type === "found" || Boolean(pet.date || pet.city);
     const formattedAge = pet.age ? formatAge(pet.age) : null;
     const cleanPhone = (pet.phone || "").replace(/\D/g, "");
+
+    // Tratamento das datas: ocorrência ou criação (para adoção)
+    const formattedDate = formatDate(pet.date);
+    const formattedCreatedAt = formatDate(pet.createdAt);
+
+    // Traduções amigáveis
+    const speciesMap: Record<string, string> = {
+        dog: "Cachorro",
+        cat: "Gato",
+        other: "Outro"
+    };
+
+    const sizeMap: Record<string, string> = {
+        small: "Porte Pequeno",
+        medium: "Porte Médio",
+        large: "Porte Grande"
+    };
+
+    const statusMap: Record<string, { label: string; color: string }> = {
+        active: { label: "Ativo", color: "bg-emerald-500/10 text-emerald-600 border-emerald-200" },
+        resolved: { label: "Resolvido", color: "bg-blue-500/10 text-blue-600 border-blue-200" },
+        adopted: { label: "Adotado", color: "bg-purple-500/10 text-purple-600 border-purple-200" },
+    };
+
+    const speciesLabel = speciesMap[pet.species] || pet.species;
+    const sizeLabel = pet.size ? sizeMap[pet.size] || pet.size : null;
+    const genderLabel = pet.gender === "male" ? "Macho" : pet.gender === "female" ? "Fêmea" : null;
+    const statusInfo = pet.status ? statusMap[pet.status] : null;
 
     const whatsappMessage = encodeURIComponent(
         `Olá ${pet.contactName || "Tutor"}, vi a ocorrência sobre o pet "${pet.name || "Pet"}" e gostaria de ajudar/obter mais informações.`
@@ -80,7 +116,6 @@ export function PetDetailModal({ pet, isOpen, onClose }: PetDetailModalProps) {
                                 alt={pet.name || "Pet"}
                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                             />
-                            {/* Dica visual ao passar o mouse para ampliar */}
                             <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                 <span className="bg-black/60 text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 backdrop-blur-md">
                                     <FaExpand className="w-3.5 h-3.5" /> Clique para ampliar
@@ -93,7 +128,6 @@ export function PetDetailModal({ pet, isOpen, onClose }: PetDetailModalProps) {
                         </div>
                     )}
 
-                    {/* Setas de Navegação (se houver mais de uma foto) */}
                     {hasMultiplePhotos && (
                         <>
                             <button
@@ -116,7 +150,6 @@ export function PetDetailModal({ pet, isOpen, onClose }: PetDetailModalProps) {
                         </>
                     )}
 
-                    {/* Badge de Tipo e Recompensa */}
                     <div className="absolute top-4 left-4 z-20 flex flex-wrap gap-2 pointer-events-none">
                         <span className={`text-xs px-3.5 py-1.5 rounded-full font-bold shadow-xs ${badgeColor}`}>
                             {typeLabel}
@@ -124,13 +157,12 @@ export function PetDetailModal({ pet, isOpen, onClose }: PetDetailModalProps) {
 
                         {pet.reward && (
                             <span className="text-xs px-3.5 py-1.5 rounded-full bg-amber-400 text-gray-950 font-bold shadow-xs">
-                                {pet.reward}
+                                Recompensa: R$ {pet.reward}
                             </span>
                         )}
                     </div>
                 </div>
 
-                {/* Miniaturas da Galeria (Thumbnail Strip) */}
                 {hasMultiplePhotos && (
                     <div className="bg-[#F4F4F2] px-4 py-3 border-b border-[#E4E4E1] flex items-center gap-2 overflow-x-auto">
                         {photos.map((photo, idx) => (
@@ -150,30 +182,42 @@ export function PetDetailModal({ pet, isOpen, onClose }: PetDetailModalProps) {
                 {/* Conteúdo do Detalhe */}
                 <div className="p-6 sm:p-8 flex-1 flex flex-col justify-between gap-6">
                     <div className="space-y-4">
-                        <div>
-                            <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-start justify-between gap-4">
+                            <div>
                                 <h3 className="text-2xl sm:text-3xl font-bold font-['Manrope'] text-[#2D2D2D]">
                                     {pet.name || "Sem Nome"}
                                 </h3>
+                                <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mt-1 flex flex-wrap items-center gap-1.5">
+                                    <span>{speciesLabel}</span>
+                                    {pet.breed ? ` • ${pet.breed}` : ""}
+                                    {formattedAge ? ` • ${formattedAge}` : ""}
+                                    {genderLabel ? ` • ${genderLabel}` : ""}
+                                    {sizeLabel ? ` • ${sizeLabel}` : ""}
+                                </p>
                             </div>
-                            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mt-1">
-                                {pet.breed || "Raça não informada"}
-                                {formattedAge ? ` • ${formattedAge}` : ""}
-                                {pet.gender ? ` • ${pet.gender === 'male' ? 'Macho' : 'Fêmea'}` : ""}
-                            </p>
+
+                            {statusInfo && (
+                                <span className={`text-xs font-semibold px-3 py-1 rounded-full border shrink-0 ${statusInfo.color}`}>
+                                    {statusInfo.label}
+                                </span>
+                            )}
                         </div>
 
                         {/* Descrição */}
-                        {pet.description && (
+                        {pet.description ? (
                             <div className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-2xl p-4">
                                 <h4 className="text-xs font-bold text-[#2D2D2D] uppercase tracking-wider mb-1">Sobre o ocorrido / Descrição</h4>
                                 <p className="text-sm text-[#6B7280] leading-relaxed">
                                     {pet.description}
                                 </p>
                             </div>
+                        ) : (
+                            <div className="bg-[#F4F4F2]/50 border border-[#E4E4E1] rounded-2xl p-3 text-xs text-[#6B7280] italic">
+                                Nenhuma descrição adicional informada pelo tutor.
+                            </div>
                         )}
 
-                        {/* Informações Específicas (Localização e Data) */}
+                        {/* Informações Específicas (Localização e Data Condicional) */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                             {(pet.state || pet.city) && (
                                 <div className="flex items-center gap-3 bg-[#F4F4F2] border border-[#E4E4E1] p-3.5 rounded-2xl text-xs text-[#2D2D2D]">
@@ -182,32 +226,67 @@ export function PetDetailModal({ pet, isOpen, onClose }: PetDetailModalProps) {
                                     </div>
                                     <div className="overflow-hidden">
                                         <p className="text-[10px] text-[#6B7280] font-semibold uppercase">Localização</p>
-                                        <span className="font-medium truncate block">{pet.state || `${pet.city}${pet.state ? `, ${pet.state}` : ''}`}</span>
+                                        <span className="font-medium truncate block">
+                                            {pet.city && pet.state ? `${pet.city}, ${pet.state}` : (pet.city || pet.state)}
+                                        </span>
                                     </div>
                                 </div>
                             )}
 
-                            {(pet.date || pet.createdAt) && isOccurrence && (
+                            {/* Condicional para exibir Data de Ocorrência (Lost/Found) ou Data de Criação (Adoção) */}
+                            {((pet.type === "lost" || pet.type === "found") && formattedDate) || pet.type !== "lost" && pet.type !== "found" ? (
                                 <div className="flex items-center gap-3 bg-[#F4F4F2] border border-[#E4E4E1] p-3.5 rounded-2xl text-xs text-[#2D2D2D]">
                                     <div className="p-2.5 bg-[#FF7A59]/10 text-[#FF7A59] rounded-xl shrink-0">
                                         <FaCalendarDay className="w-4 h-4" />
                                     </div>
                                     <div className="overflow-hidden">
                                         <p className="text-[10px] text-[#6B7280] font-semibold uppercase">
-                                            {pet.type === "lost" ? "Desaparecido em" : "Encontrado em"}
+                                            {pet.type === "lost"
+                                                ? "Desaparecido em"
+                                                : pet.type === "found"
+                                                    ? "Encontrado em"
+                                                    : "Criado em"}
                                         </p>
-                                        <span className="font-medium truncate block">{pet.date || pet.createdAt?.substring(0, 10)}</span>
+                                        <span className="font-medium truncate block">
+                                            {pet.type === "lost" || pet.type === "found" ? formattedDate : formattedCreatedAt}
+                                        </span>
                                     </div>
                                 </div>
-                            )}
+                            ) : null}
                         </div>
+
+                        {/* Card do Usuário / Tutor Responsável */}
+                        {pet.user && (
+                            <div className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-2xl p-4 flex items-center gap-3.5">
+                                {pet.user.avatar ? (
+                                    <img
+                                        src={pet.user.avatar}
+                                        alt={pet.user.name}
+                                        className="w-12 h-12 rounded-full object-cover border border-[#E4E4E1] shrink-0"
+                                    />
+                                ) : (
+                                    <div className="w-12 h-12 rounded-full bg-[#FF7A59]/10 text-[#FF7A59] flex items-center justify-center font-bold text-base shrink-0">
+                                        {pet.user.name.substring(0, 2).toUpperCase()}
+                                    </div>
+                                )}
+                                <div className="overflow-hidden flex-1">
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-xs font-bold text-[#2D2D2D] truncate">{pet.user.name}</span>
+                                        <FaCircleCheck className="w-3 h-3 text-[#FF7A59]" title="Usuário Cadastrado" />
+                                    </div>
+                                    <p className="text-[11px] text-[#6B7280] truncate">
+                                        {pet.user.bio || `Cadastrado em ${pet.city || "Curitiba"}`}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Rodapé com Ações / Contato */}
                     <div className="pt-4 border-t border-[#E4E4E1] flex flex-col sm:flex-row items-center justify-between gap-3">
                         <div className="text-xs text-[#6B7280]">
                             {pet.contactName ? (
-                                <span>Responsável pelo contato: <strong className="text-[#2D2D2D]">{pet.contactName}</strong></span>
+                                <span>Contato: <strong className="text-[#2D2D2D]">{pet.contactName}</strong></span>
                             ) : (
                                 <span>Rede de Apoio • Proteção Animal</span>
                             )}

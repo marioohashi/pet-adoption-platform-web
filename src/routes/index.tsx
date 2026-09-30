@@ -8,6 +8,7 @@ import { MyPetsList } from "../sections/MyPetsList";
 import { NGOsList } from "../sections/NGOsList"
 import { VetsList } from "../sections/VetList"
 import { LostPets } from "../sections/LostPets"
+import { Settings } from "../sections/Settings"
 
 import { NotFound } from "../sections/NotFound"
 
@@ -25,6 +26,7 @@ export function AppRoutes() {
 
                     <Route element={<ProtectedRoute />}>
                         <Route path="/meus-pets" element={<MyPetsList />} />
+                        <Route path="/minha-conta" element={<Settings />} />
                     </Route>
 
                 </Route>

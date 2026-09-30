@@ -2,11 +2,11 @@ import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useState } from "react";
 import { FaSliders, FaXmark, FaMagnifyingGlass } from "react-icons/fa6";
 import { getPets } from "../services/petService";
-import { PetListCard } from "../sections/PetListCard";
+import { PetCard } from "../components/PetCard";
 import { PetDetailModal } from "../modals/PetDetailModal";
 import { Pagination } from "../components/Pagination";
 import { type Pet, type PetsResponse, Species, PetSize, PetSex } from "../types";
-import { Hero } from "../sections/Hero";
+import { Hero } from "../components/Hero";
 
 const PER_PAGE = 9;
 
@@ -227,7 +227,7 @@ export function PetList() {
             }`}
         >
           {pets.map((pet: Pet) => (
-            <PetListCard
+            <PetCard
               key={pet.id}
               pet={pet}
               onClick={() => setSelectedPet(pet)}

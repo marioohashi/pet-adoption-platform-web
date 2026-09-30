@@ -1,10 +1,7 @@
 import { useState } from "react";
-import { FaPhone, FaLocationDot, FaClock, FaXmark, FaPlus, FaPenToSquare, FaTrash } from "react-icons/fa6";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { FaPhone, FaLocationDot, FaClock, FaXmark } from "react-icons/fa6";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "../services/api";
-import { useAuth } from "../hooks/useAuth";
-import { ConfirmModal } from "../modals/ConfirmModal";
-import { CreateVetModal } from "../modals/CreateVetModal";
 
 interface VetPartner {
     id: string;
@@ -64,15 +61,8 @@ const MOCK_VETS: VetPartner[] = [
 ];
 
 export function VetsList() {
-    const { isAdmin } = useAuth();
-    const queryClient = useQueryClient();
 
     const [selectedVet, setSelectedVet] = useState<VetPartner | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [vetToEdit, setVetToEdit] = useState<VetPartner | null>(null);
-    const [vetToDeleteId, setVetToDeleteId] = useState<string | null>(null);
-
-    // Busca da API com Fallback para Mock caso falhe ou retorne vazio
     const { data: rawVets = [], isLoading } = useQuery<VetPartner[]>({
         queryKey: ["vets"],
         queryFn: async () => {
@@ -87,32 +77,6 @@ export function VetsList() {
 
     const vets = rawVets.length > 0 ? rawVets : MOCK_VETS;
 
-    // Mutation para deletar
-    const deleteMutation = useMutation({
-        mutationFn: async (id: string) => {
-            if (id.startsWith("mock-")) return; // Simula exclusão se for mock
-            await api.delete(`/vets/${id}`);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["vets"] });
-            setVetToDeleteId(null);
-        },
-        onError: () => {
-            alert("Erro ao remover parceiro.");
-        }
-    });
-
-    function handleOpenCreate() {
-        setVetToEdit(null);
-        setIsModalOpen(true);
-    }
-
-    function handleOpenEdit(vet: VetPartner, e: React.MouseEvent) {
-        e.stopPropagation();
-        setVetToEdit(vet);
-        setIsModalOpen(true);
-    }
-
     return (
         <section className="w-full font-sans">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -124,16 +88,6 @@ export function VetsList() {
                         Profissionais e estabelecimentos parceiros prontos para cuidar da saúde do seu pet no Adote2Pets.
                     </p>
                 </div>
-
-                {isAdmin && (
-                    <button
-                        onClick={handleOpenCreate}
-                        type="button"
-                        className="flex items-center justify-center gap-2 bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold px-4.5 py-3 rounded-2xl transition-all shadow-sm hover:shadow-md cursor-pointer shrink-0 text-sm"
-                    >
-                        <FaPlus className="w-4 h-4" /> Adicionar Clínica / Vet
-                    </button>
-                )}
             </div>
 
             {isLoading ? (
@@ -175,30 +129,6 @@ export function VetsList() {
                                                 {vet.specialty}
                                             </p>
                                         </div>
-
-                                        {isAdmin && (
-                                            <div className="flex items-center gap-1 shrink-0 z-10">
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => handleOpenEdit(vet, e)}
-                                                    className="p-2 text-[#6B7280] hover:text-[#FF7A59] hover:bg-[#F4F4F2] rounded-xl transition cursor-pointer"
-                                                    title="Editar parceiro"
-                                                >
-                                                    <FaPenToSquare className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setVetToDeleteId(vet.id);
-                                                    }}
-                                                    className="p-2 text-[#6B7280] hover:text-red-500 hover:bg-red-50 rounded-xl transition cursor-pointer"
-                                                    title="Remover parceiro"
-                                                >
-                                                    <FaTrash className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -207,7 +137,6 @@ export function VetsList() {
                 </div>
             )}
 
-            {/* Modal de Detalhes */}
             {selectedVet && (
                 <div className="fixed inset-0 z-50 bg-[#2D2D2D]/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="bg-[#FAFAF8] border border-[#E4E4E1] rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl relative text-[#2D2D2D] p-6 sm:p-8 space-y-6">
@@ -278,24 +207,6 @@ export function VetsList() {
                     </div>
                 </div>
             )}
-
-            <CreateVetModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                initialData={vetToEdit ? { ...vetToEdit, crmv: vetToEdit.crmv ?? "" } : null}
-            />
-
-            <ConfirmModal
-                isOpen={Boolean(vetToDeleteId)}
-                title="Excluir parceiro de saúde?"
-                message="Tem certeza que deseja remover esta clínica ou veterinário do banco de dados? Esta ação não poderá ser desfeita."
-                confirmText="Sim, excluir"
-                cancelText="Cancelar"
-                onConfirm={() => {
-                    if (vetToDeleteId) deleteMutation.mutate(vetToDeleteId);
-                }}
-                onCancel={() => setVetToDeleteId(null)}
-            />
         </section>
     );
 }
