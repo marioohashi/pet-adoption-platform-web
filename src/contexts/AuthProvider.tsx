@@ -32,6 +32,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(data)
     }
 
+    // ➡️️ ADICIONE ESTA FUNÇÃO:
+    function updateSession(updatedUser: UserAPIResponse["user"]) {
+        if (!session) return
+
+        const newSession = {
+            ...session,
+            user: updatedUser,
+        }
+
+        localStorage.setItem(`${LOCAL_STORAGE_KEY}_user`, JSON.stringify(updatedUser))
+        setSession(newSession)
+    }
+
     function remove() {
         setSession(null)
         localStorage.removeItem(`${LOCAL_STORAGE_KEY}_user`)
@@ -42,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return (
-        <AuthContext.Provider value={{ session, save, remove, isAdmin }}>
+        <AuthContext.Provider value={{ session, save, updateSession, remove, isAdmin }}>
             {children}
         </AuthContext.Provider>
     )

@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { FaLocationDot, FaCalendarDay, FaTriangleExclamation, FaMagnifyingGlass, FaWhatsapp, FaSliders, FaXmark, FaPaw, FaChevronLeft, FaChevronRight } from "react-icons/fa6";
+import { FaTriangleExclamation, FaMagnifyingGlass, FaSliders, FaXmark } from "react-icons/fa6";
 import { getPets } from "../services/petService";
 import { Pagination } from "../components/Pagination";
 import { PetDetailModal } from "../modals/PetDetailModal";
+import { PetCard } from "../components/PetCard"
 import type { PetsResponse, Species, PetSize, PetSex } from "../types";
-
 const PER_PAGE = 9;
 
 // Mock local robusto para testes e fallback
@@ -306,10 +306,10 @@ export function LostPets() {
             ) : (
                 <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 transition-opacity duration-200 ${isFetching ? "opacity-50" : "opacity-100"}`}>
                     {pets.map((pet: any) => (
-                        <PetCardItem
+                        <PetCard
                             key={pet.id}
                             pet={pet}
-                            onSelect={() => setSelectedPet(pet)}
+                            onClick={() => setSelectedPet(pet)}
                         />
                     ))}
                 </div>
@@ -334,152 +334,5 @@ export function LostPets() {
                 onClose={() => setSelectedPet(null)}
             />
         </section>
-    );
-}
-
-// Subcomponente interno para gerenciar o carrossel de fotos de cada card de forma isolada
-function PetCardItem({ pet, onSelect }: { pet: any; onSelect: () => void }) {
-    const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
-
-    // Normaliza as fotos do pet (suporta array 'photos' ou string única 'photo')
-    const photos: string[] = Array.isArray(pet.photos) && pet.photos.length > 0
-        ? pet.photos
-        : pet.photo
-            ? [pet.photo]
-            : [];
-
-    const hasMultiplePhotos = photos.length > 1;
-
-    function handlePrevPhoto(e: React.MouseEvent) {
-        e.stopPropagation();
-        setCurrentPhotoIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
-    }
-
-    function handleNextPhoto(e: React.MouseEvent) {
-        e.stopPropagation();
-        setCurrentPhotoIndex((prev) => (prev === photos.length - 1 ? 0 : prev + 1));
-    }
-
-    const cleanPhone = (pet.phone || "").replace(/\D/g, "");
-    const whatsappMessage = encodeURIComponent(
-        `Olá ${pet.contactName || "Tutor"}, vi a ocorrência sobre o pet "${pet.name || "Pet"}" (${pet.breed}) na rede de apoio e gostaria de ajudar/obter mais informações.`
-    );
-    const whatsappUrl = cleanPhone ? `https://wa.me/${cleanPhone}?text=${whatsappMessage}` : "#";
-
-    return (
-        <div
-            onClick={onSelect}
-            className="bg-[#FAFAF8] border border-[#E4E4E1] rounded-3xl overflow-hidden hover:border-[#FF7A59]/50 transition-all duration-300 flex flex-col group shadow-xs hover:shadow-xl relative cursor-pointer"
-        >
-            <div className="relative w-full aspect-[4/5] sm:aspect-square bg-[#F4F4F2] flex items-center justify-center overflow-hidden">
-                {photos.length > 0 ? (
-                    <img
-                        src={photos[currentPhotoIndex]}
-                        alt={pet.name || "Pet"}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                ) : (
-                    <FaPaw className="w-16 h-16 text-[#E4E4E1]" />
-                )}
-
-                <div className="absolute top-3 left-3 z-10 flex flex-wrap gap-2">
-                    {pet.type === "lost" ? (
-                        <span className="text-xs px-3 py-1 rounded-full bg-red-600 text-white font-bold shadow-xs">
-                            Perdido
-                        </span>
-                    ) : (
-                        <span className="text-xs px-3 py-1 rounded-full bg-amber-600 text-white font-bold shadow-xs">
-                            Achado
-                        </span>
-                    )}
-
-                    {pet.reward && (
-                        <span className="text-xs px-3 py-1 rounded-full bg-amber-400 text-gray-950 font-bold shadow-xs">
-                            {pet.reward}
-                        </span>
-                    )}
-                </div>
-
-                {hasMultiplePhotos && (
-                    <>
-                        <button
-                            type="button"
-                            onClick={handlePrevPhoto}
-                            className="absolute left-2.5 top-1/2 -translate-y-1/2 bg-[#2D2D2D]/60 hover:bg-[#2D2D2D]/80 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-pointer backdrop-blur-sm"
-                            title="Foto anterior"
-                        >
-                            <FaChevronLeft className="w-3.5 h-3.5" />
-                        </button>
-
-                        <button
-                            type="button"
-                            onClick={handleNextPhoto}
-                            className="absolute right-2.5 top-1/2 -translate-y-1/2 bg-[#2D2D2D]/60 hover:bg-[#2D2D2D]/80 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-pointer backdrop-blur-sm"
-                            title="Próxima foto"
-                        >
-                            <FaChevronRight className="w-3.5 h-3.5" />
-                        </button>
-
-                        <div className="absolute bottom-3 inset-x-0 flex items-center justify-center gap-1.5 z-10">
-                            {photos.map((_, idx) => (
-                                <span
-                                    key={idx}
-                                    className={`h-1.5 rounded-full transition-all ${currentPhotoIndex === idx ? "w-4 bg-[#FF7A59]" : "w-1.5 bg-white/70"
-                                        }`}
-                                />
-                            ))}
-                        </div>
-                    </>
-                )}
-            </div>
-
-            <div className="p-5 flex-1 flex flex-col justify-between gap-4">
-                <div className="space-y-2">
-                    <div>
-                        <h3 className="text-xl font-bold font-['Manrope'] text-[#2D2D2D] group-hover:text-[#FF7A59] transition-colors">
-                            {pet.name || "Sem nome"}
-                        </h3>
-                        <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mt-0.5">
-                            {pet.breed}
-                        </p>
-                    </div>
-
-                    <p className="text-sm text-[#6B7280] line-clamp-2 leading-relaxed">
-                        {pet.description}
-                    </p>
-                </div>
-
-                <div className="space-y-2 pt-2 border-t border-[#E4E4E1]">
-                    <div className="flex items-center gap-2.5 text-xs text-[#2D2D2D]">
-                        <div className="p-2 bg-[#FF7A59]/10 text-[#FF7A59] rounded-xl shrink-0">
-                            <FaLocationDot className="w-3.5 h-3.5" />
-                        </div>
-                        <span className="font-medium truncate">{pet.location || pet.city}</span>
-                    </div>
-
-                    <div className="flex items-center gap-2.5 text-xs text-[#2D2D2D]">
-                        <div className="p-2 bg-[#FF7A59]/10 text-[#FF7A59] rounded-xl shrink-0">
-                            <FaCalendarDay className="w-3.5 h-3.5" />
-                        </div>
-                        <span className="font-medium">
-                            {pet.type === "lost" ? "Desaparecido em: " : "Encontrado em: "} {pet.date || pet.createdAt?.substring(0, 10)}
-                        </span>
-                    </div>
-                </div>
-
-                {cleanPhone && (
-                    <div className="pt-2" onClick={(e) => e.stopPropagation()}>
-                        <a
-                            href={whatsappUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] text-white font-semibold py-3 px-4 rounded-2xl transition text-xs shadow-sm cursor-pointer"
-                        >
-                            <FaWhatsapp className="w-4 h-4" /> Mandar Mensagem ({pet.contactName || "Contato"})
-                        </a>
-                    </div>
-                )}
-            </div>
-        </div>
     );
 }

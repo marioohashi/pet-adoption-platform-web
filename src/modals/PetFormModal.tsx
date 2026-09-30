@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type React from "react";
 import { FaXmark, FaPaw, FaTrash, FaPlus } from "react-icons/fa6";
 import { useQueryClient } from "@tanstack/react-query";
@@ -37,6 +37,7 @@ interface PetFormModalProps {
     isOpen: boolean;
     onClose: () => void;
     initialData?: Pet | null;
+    onDelete?: (pet: Pet) => void; // Adicionado para suportar exclusão direta do modal
 }
 
 const createPetSchema = z.object({
@@ -45,13 +46,15 @@ const createPetSchema = z.object({
     species: z.enum(["dog", "cat", "other"]),
     breed: z.string().optional().or(z.literal("")),
     age: z.number().min(0, "Idade inválida").optional(),
-    size: z.enum(["small", "medium", "big"]).optional().or(z.literal("")),
+    size: z.enum(["small", "medium", "large"]).optional().or(z.literal("")),
     gender: z.enum(["male", "female"]).optional().or(z.literal("")),
     city: z.string().trim().min(2, "Informe a cidade"),
     state: z.string().trim().min(2, "Informe o estado (UF)"),
     description: z.string().optional().or(z.literal("")),
     contactName: z.string().trim().min(2, "Informe o nome de contato"),
     phone: z.string().trim().min(8, "Informe um telefone válido"),
+    reward: z.string().optional().or(z.literal("")).nullable(),
+    date: z.string().optional().or(z.literal("")).nullable(),
 });
 
 const selectClasses = `
@@ -77,7 +80,7 @@ const selectClasses = `
     pr-10
 `;
 
-export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps) {
+export function PetFormModal({ isOpen, onClose, initialData, onDelete }: PetFormModalProps) {
     const queryClient = useQueryClient();
     const [name, setName] = useState("");
     const [type, setType] = useState<AdObjective>("adoption");
@@ -91,6 +94,9 @@ export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps
     const [state, setState] = useState("PR");
     const [description, setDescription] = useState("");
 
+    const [reward, setReward] = useState("");
+    const [date, setDate] = useState("");
+
     const [contactName, setContactName] = useState("");
     const [phone, setPhone] = useState("");
 
@@ -100,43 +106,82 @@ export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+    // Referência para guardar o estado inicial e comparar se houve alterações reais
+    const initialSnapshot = useRef<string>("");
 
     const isEditing = Boolean(initialData?.id);
     const currentDescription = objectivesList.find(obj => obj.id === type)?.description;
 
     useEscapeKey(handleRequestClose, isOpen);
 
+    // Função para gerar um snapshot atual do formulário em formato JSON
+    function getFormSnapshot(currentData = {
+        name, type, species, breed, years, months, size, gender, city, state, description, reward, date, contactName, phone, photos
+    }) {
+        return JSON.stringify(currentData);
+    }
+
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
-                setName(initialData.name || "");
-                setType((initialData.type as AdObjective) || "adoption");
-                setSpecies((initialData.species as "dog" | "cat" | "other") || "dog");
-                setBreed(initialData.breed || "");
+                const loadedName = initialData.name || "";
+                const loadedType = (initialData.type as AdObjective) || "adoption";
+                const loadedSpecies = (initialData.species as "dog" | "cat" | "other") || "dog";
+                const loadedBreed = initialData.breed || "";
 
                 const totalMonths = initialData.age ?? 0;
-                setYears(String(Math.floor(totalMonths / 12)));
-                setMonths(String(totalMonths % 12));
+                const loadedYears = String(Math.floor(totalMonths / 12));
+                const loadedMonths = String(totalMonths % 12);
 
-                setSize(initialData.size || "");
-                setGender(initialData.gender || "");
-                setCity(initialData.city || "Curitiba");
-                setState(initialData.state || "PR");
-                setDescription(initialData.description || "");
-
-                setContactName(initialData.contactName || "");
-                setPhone(initialData.phone || "");
+                const loadedSize = initialData.size || "";
+                const loadedGender = initialData.gender || "";
+                const loadedCity = initialData.city || "Curitiba";
+                const loadedState = initialData.state || "PR";
+                const loadedDescription = initialData.description || "";
+                const loadedReward = initialData.reward || "";
+                const loadedDate = initialData.date ? initialData.date.substring(0, 10) : "";
+                const loadedContactName = initialData.contactName || "";
+                const loadedPhone = initialData.phone || "";
 
                 const initialPhotos = initialData.photos && initialData.photos.length > 0
                     ? initialData.photos
                     : initialData.photo ? [initialData.photo] : [];
 
+                setName(loadedName);
+                setType(loadedType);
+                setSpecies(loadedSpecies);
+                setBreed(loadedBreed);
+                setYears(loadedYears);
+                setMonths(loadedMonths);
+                setSize(loadedSize);
+                setGender(loadedGender);
+                setCity(loadedCity);
+                setState(loadedState);
+                setDescription(loadedDescription);
+                setReward(loadedReward);
+                setDate(loadedDate);
+                setContactName(loadedContactName);
+                setPhone(loadedPhone);
                 setPhotos(initialPhotos);
                 setSelectedFiles([]);
+
+                // Salva o snapshot inicial para comparar modificações depois
+                initialSnapshot.current = getFormSnapshot({
+                    name: loadedName, type: loadedType, species: loadedSpecies, breed: loadedBreed,
+                    years: loadedYears, months: loadedMonths, size: loadedSize, gender: loadedGender,
+                    city: loadedCity, state: loadedState, description: loadedDescription,
+                    reward: loadedReward, date: loadedDate, contactName: loadedContactName,
+                    phone: loadedPhone, photos: initialPhotos
+                });
             } else {
                 resetForm();
-                setContactName("");
-                setPhone("");
+                initialSnapshot.current = getFormSnapshot({
+                    name: "", type: "adoption", species: "dog", breed: "", years: "0", months: "0",
+                    size: "", gender: "", city: "Curitiba", state: "PR", description: "",
+                    reward: "", date: "", contactName: "", phone: "", photos: []
+                });
             }
         }
     }, [isOpen, initialData]);
@@ -155,6 +200,8 @@ export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps
         setCity("Curitiba");
         setState("PR");
         setDescription("");
+        setReward("");
+        setDate("");
         setContactName("");
         setPhone("");
         setPhotos([]);
@@ -163,7 +210,9 @@ export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps
     }
 
     function handleRequestClose() {
-        if (photos.length > 0 || name.trim() !== "") {
+        const currentSnapshot = getFormSnapshot();
+        // Só exibe o aviso se o formulário foi alterado em relação ao estado inicial
+        if (currentSnapshot !== initialSnapshot.current) {
             setShowConfirmModal(true);
             return;
         }
@@ -172,6 +221,7 @@ export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps
 
     function forceClose() {
         setShowConfirmModal(false);
+        setShowDeleteConfirm(false);
         resetForm();
         onClose();
     }
@@ -194,6 +244,18 @@ export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps
         setSelectedFiles((prev) => prev.filter((_, idx) => idx !== indexToRemove));
     }
 
+    function handleDeleteClick() {
+        setShowDeleteConfirm(true);
+    }
+
+    function confirmDelete() {
+        if (!initialData) return;
+        if (onDelete) {
+            onDelete(initialData);
+        }
+        forceClose();
+    }
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setErrorMessage(null);
@@ -208,6 +270,7 @@ export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps
             const finalPhotosList = [...existingUrls, ...uploadedUrls];
 
             const totalAgeInMonths = (Number(years) || 0) * 12 + (Number(months) || 0);
+            const formattedDate = type !== "adoption" && date ? date : null;
 
             const validatedData = createPetSchema.parse({
                 name,
@@ -222,6 +285,8 @@ export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps
                 description: description.trim() ? description.trim() : undefined,
                 contactName,
                 phone,
+                reward: type === "lost" && reward.trim() ? reward.trim() : null,
+                date: formattedDate,
             });
 
             const payload = {
@@ -243,8 +308,6 @@ export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps
             if (error instanceof ZodError) {
                 setErrorMessage(error.issues[0].message);
             } else if (error instanceof AxiosError) {
-                console.error("DADOS QUE O BACKEND REJEITOU:", error.response?.data);
-
                 const responseData = error.response?.data;
                 const serverMsg =
                     typeof responseData === "object" && responseData !== null && "message" in responseData
@@ -281,17 +344,19 @@ export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps
                     </button>
 
                     {/* Cabeçalho */}
-                    <div className="p-6 sm:p-7 pb-4 border-b border-[#E4E4E1] flex items-center gap-3.5">
-                        <div className="p-3 bg-[#FF7A59]/10 rounded-2xl text-[#FF7A59]">
-                            <FaPaw className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <h2 className="text-xl font-bold font-['Manrope'] text-[#2D2D2D] tracking-tight">
-                                {isEditing ? "Editar Anúncio" : "Cadastrar Anúncio de Pet"}
-                            </h2>
-                            <p className="text-xs text-[#6B7280] mt-0.5">
-                                Preencha os detalhes para divulgar na comunidade
-                            </p>
+                    <div className="p-6 sm:p-7 pb-4 border-b border-[#E4E4E1] flex items-center justify-between gap-3.5">
+                        <div className="flex items-center gap-3.5">
+                            <div className="p-3 bg-[#FF7A59]/10 rounded-2xl text-[#FF7A59]">
+                                <FaPaw className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-bold font-['Manrope'] text-[#2D2D2D] tracking-tight">
+                                    {isEditing ? "Editar Anúncio" : "Cadastrar Anúncio de Pet"}
+                                </h2>
+                                <p className="text-xs text-[#6B7280] mt-0.5">
+                                    Preencha os detalhes para divulgar na comunidade
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -468,7 +533,7 @@ export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps
                                     <option value="">Selecione o porte</option>
                                     <option value="small">Pequeno</option>
                                     <option value="medium">Médio</option>
-                                    <option value="big">Grande</option>
+                                    <option value="large">Grande</option>
                                 </select>
                             </div>
 
@@ -509,6 +574,34 @@ export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps
                             </div>
                         </div>
 
+                        {/* Campos Dinâmicos: Data e Recompensa */}
+                        {(type === "lost" || type === "found") && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#F4F4F2]/50 p-4 rounded-2xl border border-[#E4E4E1]">
+                                <div>
+                                    <label className="block text-xs font-semibold text-[#2D2D2D] mb-1.5">
+                                        {type === "lost" ? "Data em que foi perdido" : "Data em que foi achado"}
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={date}
+                                        onChange={(e) => setDate(e.target.value)}
+                                        className="w-full bg-white border border-[#E4E4E1] rounded-2xl px-4 py-3.5 text-sm text-[#2D2D2D] focus:outline-none focus:border-[#FF7A59] transition shadow-xs"
+                                    />
+                                </div>
+
+                                {type === "lost" && (
+                                    <div>
+                                        <Input
+                                            legend="Recompensa (Opcional)"
+                                            placeholder="Ex: R$ 300,00"
+                                            value={reward}
+                                            onChange={(e) => setReward(e.target.value)}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {/* Contato (Nome e Telefone) */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-[#E4E4E1]">
                             <Input
@@ -541,11 +634,24 @@ export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps
                             />
                         </div>
 
-                        <div className="pt-2">
+                        {/* Botões de Ação na Base (Salvar e Excluir se estiver editando) */}
+                        <div className="pt-2 flex items-center gap-3">
+                            {isEditing && (
+                                <button
+                                    type="button"
+                                    onClick={handleDeleteClick}
+                                    className="bg-red-50 hover:bg-red-100 text-red-600 font-semibold px-4 py-3.5 rounded-2xl transition text-sm flex items-center justify-center gap-2 cursor-pointer border border-red-200 shrink-0"
+                                    title="Excluir Anúncio"
+                                >
+                                    <FaTrash className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Excluir</span>
+                                </button>
+                            )}
+
                             <Button
                                 type="submit"
                                 isLoading={isLoading}
-                                className="w-full bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold py-3.5 rounded-2xl shadow-sm text-sm transition cursor-pointer"
+                                className="w-full bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold py-3.5 rounded-2xl shadow-sm text-sm transition cursor-pointer flex-1"
                             >
                                 {isEditing ? "Salvar Alterações" : "Publicar Anúncio"}
                             </Button>
@@ -555,10 +661,26 @@ export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps
                 </div>
             </div>
 
+            {/* Modal de confirmação ao tentar fechar com alterações não salvas */}
             <ConfirmModal
                 isOpen={showConfirmModal}
+                title="Descartar alterações?"
+                message="Você tem modificações não salvas. Tem certeza que deseja fechar?"
+                confirmText="Sim, descartar"
+                cancelText="Continuar editando"
                 onConfirm={forceClose}
                 onCancel={() => setShowConfirmModal(false)}
+            />
+
+            {/* Modal de confirmação ao clicar em excluir dentro do formulário */}
+            <ConfirmModal
+                isOpen={showDeleteConfirm}
+                title={`Excluir "${initialData?.name || 'este pet'}"?`}
+                message="Tem certeza que deseja remover este anúncio do sistema? Esta ação é irreversível."
+                confirmText="Sim, excluir"
+                cancelText="Cancelar"
+                onConfirm={confirmDelete}
+                onCancel={() => setShowDeleteConfirm(false)}
             />
         </>
     );

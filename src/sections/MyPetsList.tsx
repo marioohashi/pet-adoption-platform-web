@@ -1,10 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { getMyPets, deletePet } from "../services/petService";
-import { PetListCard } from "./PetListCard";
-import { PetDetailModal } from "../modals/PetDetailModal";
+import { PetCard } from "../components/PetCard"
 import { ConfirmModal } from "../modals/ConfirmModal";
-import { PetFormModal } from "../modals/PetFormModal"; // <-- Importado aqui
+import { PetFormModal } from "../modals/PetFormModal";
 import { FaPlus, FaPaw, FaFilter } from "react-icons/fa6";
 import type { Pet } from "../types";
 
@@ -12,7 +11,8 @@ type TabFilter = "todos" | "adocao" | "perdido" | "achado";
 
 export function MyPetsList() {
     const queryClient = useQueryClient();
-    const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
+
+    // Estados para controle dos modais
     const [editingPet, setEditingPet] = useState<Pet | null>(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [petToDelete, setPetToDelete] = useState<Pet | null>(null);
@@ -35,20 +35,6 @@ export function MyPetsList() {
             alert(error.message || "Não foi possível excluir o pet.");
         },
     });
-
-    // const updateStatusMutation = useMutation({
-    //     mutationFn: async ({ id, newStatus }: { id: string; newStatus: string }) => {
-    //         return updatePet(id, { status: newStatus });
-    //     },
-    //     onSuccess: () => {
-    //         queryClient.invalidateQueries({ queryKey: ["my-pets"] });
-    //         queryClient.invalidateQueries({ queryKey: ["pets"] });
-    //     },
-    // });
-
-    function handleDeleteClick(pet: Pet) {
-        setPetToDelete(pet);
-    }
 
     function confirmDelete() {
         if (!petToDelete) return;
@@ -156,16 +142,16 @@ export function MyPetsList() {
                     </p>
                 </div>
             ) : (
-                /* Grid de Cards com Ferramenta de Status */
+                /* Grid de Cards */
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                     {filteredPets.map((pet) => (
-                        <div key={pet.id} className="flex flex-col gap-2">
-                            <PetListCard
+                        <div key={pet.id} className="flex flex-col gap-2 h-full">
+                            <PetCard
                                 pet={pet}
                                 showActions={true}
-                                onClick={() => setSelectedPet(pet)}
-                                onEdit={(p) => setEditingPet(p)}
-                                onDelete={(p) => handleDeleteClick(p)}
+                                showEditOverlay={true}
+                                onEdit={(petToEdit) => setEditingPet(petToEdit)}
+                                onDelete={(petToDelete) => setPetToDelete(petToDelete)}
                             />
                         </div>
                     ))}
@@ -184,12 +170,6 @@ export function MyPetsList() {
             </div>
 
             {/* Modais */}
-            <PetDetailModal
-                pet={selectedPet}
-                onClose={() => setSelectedPet(null)}
-                isOpen={Boolean(selectedPet)}
-            />
-
             {/* Modal para Criação de Novo Pet */}
             <PetFormModal
                 isOpen={isCreateModalOpen}
