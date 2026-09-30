@@ -1,4 +1,6 @@
 import { api } from "./api";
+import { AxiosError } from "axios";
+
 import type {
   Pet,
   Species,
@@ -41,15 +43,34 @@ export async function getPets(params: GetPetsParams): Promise<PetsResponse> {
 
 export async function getMyPets(): Promise<Pet[]> {
   const response = await api.get("/pets/me");
-  // O backend retorna um array direto em /pets/me
   return response.data;
 }
 
 export async function deletePet(id: string): Promise<void> {
-  await api.delete(`/pets/${id}`);
+  try {
+    await api.delete(`/pets/${id}`);
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error("Erro detalhado do backend ao deletar:", error.response?.data);
+      const serverMessage = error.response?.data?.message || "Erro interno ao excluir o pet.";
+
+      throw new Error(serverMessage, { cause: error });
+    }
+    throw error;
+  }
 }
 
 export async function updatePet(id: string, data: Partial<Pet>): Promise<Pet> {
-  const response = await api.put(`/pets/${id}`, data);
-  return response.data;
+  try {
+    const response = await api.put(`/pets/${id}`, data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error("Erro detalhado do backend ao atualizar pet:", error.response?.data);
+      const serverMessage = error.response?.data?.message || "Erro interno ao atualizar o pet.";
+
+      throw new Error(serverMessage, { cause: error });
+    }
+    throw error;
+  }
 }

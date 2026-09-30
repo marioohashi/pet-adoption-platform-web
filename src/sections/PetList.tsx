@@ -1,21 +1,16 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useState } from "react";
-import { FaSliders, FaXmark, FaMagnifyingGlass, FaPlus } from "react-icons/fa6";
+import { FaSliders, FaXmark, FaMagnifyingGlass } from "react-icons/fa6";
 import { getPets } from "../services/petService";
 import { PetListCard } from "../sections/PetListCard";
 import { PetDetailModal } from "../modals/PetDetailModal";
-import { AuthModal } from "../modals/AuthModal";
-import { CreatePetModal } from "../modals/CreatePetModal";
 import { Pagination } from "../components/Pagination";
 import { type Pet, type PetsResponse, Species, PetSize, PetSex } from "../types";
 import { Hero } from "../sections/Hero";
-import { useAuth } from "../hooks/useAuth";
 
 const PER_PAGE = 9;
 
 export function PetList() {
-  const { session } = useAuth();
-  const isAuthenticated = Boolean(session);
 
   const [activeTab] = useState<"adoption" | "lost" | "found">("adoption");
 
@@ -30,10 +25,7 @@ export function PetList() {
 
   const [page, setPage] = useState(1);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authModalMode, setAuthModalMode] = useState<"signin" | "signup">("signin");
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [isCreatePetModalOpen, setIsCreatePetModalOpen] = useState(false);
 
   const { data, isPending, isFetching, isError } = useQuery<PetsResponse>({
     queryKey: ["pets", activeTab, filters, page],
@@ -50,7 +42,6 @@ export function PetList() {
   const pets = data?.pets ?? data?.animals ?? [];
   const totalPages = data?.pagination?.totalPages ?? 1;
 
-  // CORRIGIDO AQUI: Parêntese fechado corretamente em ([_, val])
   const activeFiltersCount = Object.entries(filters).filter(([_, val]) => val !== "").length;
 
   function handleFilterChange(e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) {
@@ -82,15 +73,6 @@ export function PetList() {
     setPage(1);
   }
 
-  function handleAnnouncePet() {
-    if (isAuthenticated) {
-      setIsCreatePetModalOpen(true);
-    } else {
-      setAuthModalMode("signin");
-      setIsAuthModalOpen(true);
-    }
-  }
-
   if (isPending) {
     return <p className="text-center py-12 text-[#6B7280] font-sans">Carregando pets...</p>;
   }
@@ -103,20 +85,11 @@ export function PetList() {
     <section id="pets" className="w-full font-sans space-y-6 text-base">
       {/* Cabeçalho / Hero */}
       <div className="flex flex-col gap-4">
-        <Hero />
+        <Hero pets={pets} />
       </div>
 
       {/* Barra de Ações: Botão "Adicionar Pet" logo antes dos Filtros */}
       <div className="flex items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={handleAnnouncePet}
-          className="flex items-center gap-2 bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold px-4.5 py-3 rounded-2xl text-sm transition-all shadow-sm hover:shadow-md cursor-pointer"
-        >
-          <FaPlus className="w-4 h-4" />
-          <span>Adicionar Pet para Adoção</span>
-        </button>
-
         <button
           onClick={() => setIsFiltersOpen((prev) => !prev)}
           type="button"
@@ -279,19 +252,8 @@ export function PetList() {
       {/* Modais */}
       <PetDetailModal
         pet={selectedPet}
+        isOpen={Boolean(selectedPet)}
         onClose={() => setSelectedPet(null)}
-        onRequireAuth={() => setIsAuthModalOpen(true)}
-      />
-
-      <CreatePetModal
-        isOpen={isCreatePetModalOpen}
-        onClose={() => setIsCreatePetModalOpen(false)}
-      />
-
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        initialMode={authModalMode}
       />
     </section>
   );

@@ -3,8 +3,8 @@ import { useState } from "react";
 import { getMyPets, deletePet, updatePet } from "../services/petService";
 import { PetListCard } from "./PetListCard";
 import { PetDetailModal } from "../modals/PetDetailModal";
-import { CreatePetModal } from "../modals/CreatePetModal";
 import { ConfirmModal } from "../modals/ConfirmModal";
+import { PetFormModal } from "../modals/PetFormModal"; // <-- Importado aqui
 import { FaPlus, FaPaw, FaFilter } from "react-icons/fa6";
 import type { Pet } from "../types";
 
@@ -31,6 +31,9 @@ export function MyPetsList() {
             queryClient.invalidateQueries({ queryKey: ["pets"] });
             setPetToDelete(null);
         },
+        onError: (error: any) => {
+            alert(error.message || "Não foi possível excluir o pet.");
+        },
     });
 
     const updateStatusMutation = useMutation({
@@ -52,16 +55,9 @@ export function MyPetsList() {
         deleteMutation.mutate(petToDelete.id);
     }
 
-    function handleCloseFormModal() {
-        setIsCreateModalOpen(false);
-        setEditingPet(null);
-    }
-
-    // Função auxiliar robusta para verificar a categoria/tipo do pet independentemente de como a API retorna
     function matchTab(pet: any, tab: TabFilter) {
         if (tab === "todos") return true;
 
-        // Verifica múltiplas propriedades possíveis (type, category) e valores (pt/en)
         const val = (pet.type || pet.category || "").toLowerCase();
 
         if (tab === "adocao") {
@@ -107,13 +103,13 @@ export function MyPetsList() {
                 </div>
             </div>
 
-            {/* Abas de Filtro responsivas (Grid no mobile, Flex no desktop) */}
+            {/* Abas de Filtro responsivas */}
             <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 pb-4 mb-8">
                 <button
                     onClick={() => setActiveTab("todos")}
                     className={`px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2 ${activeTab === "todos"
-                            ? "bg-[#FF7A59] text-white shadow-sm"
-                            : "bg-[#F4F4F2] text-[#6B7280] hover:bg-[#E4E4E1] hover:text-[#2D2D2D]"
+                        ? "bg-[#FF7A59] text-white shadow-sm"
+                        : "bg-[#F4F4F2] text-[#6B7280] hover:bg-[#E4E4E1] hover:text-[#2D2D2D]"
                         }`}
                 >
                     <FaFilter className="w-3.5 h-3.5 shrink-0" />
@@ -122,8 +118,8 @@ export function MyPetsList() {
                 <button
                     onClick={() => setActiveTab("adocao")}
                     className={`px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer text-center ${activeTab === "adocao"
-                            ? "bg-[#FF7A59] text-white shadow-sm"
-                            : "bg-[#F4F4F2] text-[#6B7280] hover:bg-[#E4E4E1] hover:text-[#2D2D2D]"
+                        ? "bg-[#FF7A59] text-white shadow-sm"
+                        : "bg-[#F4F4F2] text-[#6B7280] hover:bg-[#E4E4E1] hover:text-[#2D2D2D]"
                         }`}
                 >
                     🐾 Adoção ({counts.adocao})
@@ -131,8 +127,8 @@ export function MyPetsList() {
                 <button
                     onClick={() => setActiveTab("perdido")}
                     className={`px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer text-center ${activeTab === "perdido"
-                            ? "bg-[#FF7A59] text-white shadow-sm"
-                            : "bg-[#F4F4F2] text-[#6B7280] hover:bg-[#E4E4E1] hover:text-[#2D2D2D]"
+                        ? "bg-[#FF7A59] text-white shadow-sm"
+                        : "bg-[#F4F4F2] text-[#6B7280] hover:bg-[#E4E4E1] hover:text-[#2D2D2D]"
                         }`}
                 >
                     🚨 Perdidos ({counts.perdido})
@@ -140,8 +136,8 @@ export function MyPetsList() {
                 <button
                     onClick={() => setActiveTab("achado")}
                     className={`px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer text-center ${activeTab === "achado"
-                            ? "bg-[#FF7A59] text-white shadow-sm"
-                            : "bg-[#F4F4F2] text-[#6B7280] hover:bg-[#E4E4E1] hover:text-[#2D2D2D]"
+                        ? "bg-[#FF7A59] text-white shadow-sm"
+                        : "bg-[#F4F4F2] text-[#6B7280] hover:bg-[#E4E4E1] hover:text-[#2D2D2D]"
                         }`}
                 >
                     🔍 Achados ({counts.achado})
@@ -171,58 +167,6 @@ export function MyPetsList() {
                                 onEdit={(p) => setEditingPet(p)}
                                 onDelete={(p) => handleDeleteClick(p)}
                             />
-
-                            {/* Barra de Administração de Status do Anúncio */}
-                            <div className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-2xl p-3 flex flex-col gap-2 text-xs">
-                                <div className="flex items-center justify-between text-[#6B7280]">
-                                    <span className="font-semibold uppercase tracking-wider text-[10px] text-[#FF7A59]">
-                                        {pet.type || pet.category || "Anúncio"}
-                                    </span>
-                                    <span>Status: <strong className="text-[#2D2D2D]">{pet.status || "Ativo"}</strong></span>
-                                </div>
-
-                                <div className="flex items-center gap-1.5 pt-1 border-t border-[#E4E4E1]">
-                                    <span className="text-[11px] text-[#6B7280] font-medium mr-auto">Marcar como:</span>
-                                    {matchTab(pet, "adocao") && (
-                                        <button
-                                            type="button"
-                                            onClick={() => updateStatusMutation.mutate({ id: pet.id, newStatus: "Adotado" })}
-                                            className="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-semibold rounded-lg transition cursor-pointer"
-                                            title="Marcar como Doado/Adotado"
-                                        >
-                                            Adotado
-                                        </button>
-                                    )}
-                                    {matchTab(pet, "perdido") && (
-                                        <button
-                                            type="button"
-                                            onClick={() => updateStatusMutation.mutate({ id: pet.id, newStatus: "Encontrado" })}
-                                            className="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-semibold rounded-lg transition cursor-pointer"
-                                            title="Marcar como Encontrado"
-                                        >
-                                            Encontrado
-                                        </button>
-                                    )}
-                                    {matchTab(pet, "achado") && (
-                                        <button
-                                            type="button"
-                                            onClick={() => updateStatusMutation.mutate({ id: pet.id, newStatus: "Tutor Localizado" })}
-                                            className="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-semibold rounded-lg transition cursor-pointer"
-                                            title="Marcar como Tutor Localizado"
-                                        >
-                                            Devolvido
-                                        </button>
-                                    )}
-                                    <button
-                                        type="button"
-                                        onClick={() => updateStatusMutation.mutate({ id: pet.id, newStatus: "Ativo" })}
-                                        className="px-2 py-1 bg-[#E4E4E1] hover:bg-[#d8d8d5] text-[#2D2D2D] font-semibold rounded-lg transition cursor-pointer"
-                                        title="Voltar para Ativo"
-                                    >
-                                        Ativo
-                                    </button>
-                                </div>
-                            </div>
                         </div>
                     ))}
                 </div>
@@ -246,10 +190,17 @@ export function MyPetsList() {
                 showContactButton={false}
             />
 
-            <CreatePetModal
-                isOpen={isCreateModalOpen || Boolean(editingPet)}
+            {/* Modal para Criação de Novo Pet */}
+            <PetFormModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+            />
+
+            {/* Modal para Edição de Pet Existente */}
+            <PetFormModal
+                isOpen={Boolean(editingPet)}
                 initialData={editingPet}
-                onClose={handleCloseFormModal}
+                onClose={() => setEditingPet(null)}
             />
 
             <ConfirmModal

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import type React from "react";
 import { FaXmark, FaPaw, FaTrash, FaPlus } from "react-icons/fa6";
 import { useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
@@ -6,13 +7,34 @@ import { ZodError, z } from "zod";
 
 import { api } from "../services/api";
 import { uploadToCloudinary } from "../services/cloudinary";
+import { useAuth } from "../hooks/useAuth";
 import { Input } from "../components/Input";
 import { Button } from "../components/Button";
 import { ConfirmModal } from "./ConfirmModal";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { Pet } from "../types/index";
 
-interface CreatePetModalProps {
+type AdObjective = "adoption" | "lost" | "found";
+
+const objectivesList: { id: AdObjective; label: string; description: string }[] = [
+    {
+        id: "adoption",
+        label: "Adoção",
+        description: "Encontre um novo lar cheio de amor para um pet resgatado ou que precisa de um tutor."
+    },
+    {
+        id: "lost",
+        label: "Perdido",
+        description: "Divulgue informações sobre um animal que fugiu para mobilizar a comunidade na busca."
+    },
+    {
+        id: "found",
+        label: "Achado",
+        description: "Achou um animal perdido na rua? Ajude a reencontrar a família original dele."
+    },
+];
+
+interface PetFormModalProps {
     isOpen: boolean;
     onClose: () => void;
     initialData?: Pet | null;
@@ -20,22 +42,48 @@ interface CreatePetModalProps {
 
 const createPetSchema = z.object({
     name: z.string().trim().min(2, "Informe o nome do pet (mínimo 2 caracteres)"),
+    type: z.enum(["adoption", "lost", "found"]),
     species: z.enum(["dog", "cat", "other"]),
-    breed: z.string().optional(),
+    breed: z.string().optional().or(z.literal("")),
     age: z.number().min(0, "Idade inválida").optional(),
-    size: z.string().optional(),
-    gender: z.string().optional(),
+    size: z.enum(["small", "medium", "big"]).optional().or(z.literal("")),
+    gender: z.enum(["male", "female"]).optional().or(z.literal("")),
     city: z.string().trim().min(2, "Informe a cidade"),
     state: z.string().trim().min(2, "Informe o estado (UF)"),
-    contactName: z.string().trim().min(2, "Informe o nome para contato"),
+    description: z.string().optional().or(z.literal("")),
+    contactName: z.string().trim().min(2, "Informe o nome de contato"),
     phone: z.string().trim().min(8, "Informe um telefone válido"),
-    description: z.string().optional(),
 });
 
-export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalProps) {
+const selectClasses = `
+    w-full
+    bg-[#F4F4F2]
+    border border-[#E4E4E1]
+    rounded-2xl
+    px-4 py-3.5
+    text-sm text-[#2D2D2D]
+    hover:border-[#6B7280]/40
+    focus:outline-none
+    focus:border-[#FF7A59]
+    focus:ring-2 focus:ring-[#FF7A59]/20
+    focus:bg-white
+    transition-all duration-200
+    shadow-xs
+    cursor-pointer
+    appearance-none
+    bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236B7280%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')]
+    bg-[length:12px_12px]
+    bg-[right_1rem_center]
+    bg-no-repeat
+    pr-10
+`;
+
+export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps) {
     const queryClient = useQueryClient();
+    const { user } = useAuth();
 
     const [name, setName] = useState("");
+    const [type, setType] = useState<AdObjective>("adoption");
     const [species, setSpecies] = useState<"dog" | "cat" | "other">("dog");
     const [breed, setBreed] = useState("");
     const [years, setYears] = useState("0");
@@ -44,9 +92,11 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
     const [gender, setGender] = useState("");
     const [city, setCity] = useState("Curitiba");
     const [state, setState] = useState("PR");
+    const [description, setDescription] = useState("");
+
+    // Novos estados para contato
     const [contactName, setContactName] = useState("");
     const [phone, setPhone] = useState("");
-    const [description, setDescription] = useState("");
 
     const [photos, setPhotos] = useState<string[]>([]);
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -56,6 +106,7 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
     const [showConfirmModal, setShowConfirmModal] = useState(false);
 
     const isEditing = Boolean(initialData?.id);
+    const currentDescription = objectivesList.find(obj => obj.id === type)?.description;
 
     useEscapeKey(handleRequestClose, isOpen);
 
@@ -63,6 +114,7 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
         if (isOpen) {
             if (initialData) {
                 setName(initialData.name || "");
+                setType((initialData.type as AdObjective) || "adoption");
                 setSpecies((initialData.species as "dog" | "cat" | "other") || "dog");
                 setBreed(initialData.breed || "");
 
@@ -74,9 +126,10 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
                 setGender(initialData.gender || initialData.sex || "");
                 setCity(initialData.city || "Curitiba");
                 setState(initialData.state || "PR");
-                setContactName(initialData.contactName || "");
-                setPhone(initialData.phone || "");
                 setDescription(initialData.description || "");
+
+                setContactName(initialData.contactName || user?.name || "");
+                setPhone(initialData.phone || user?.phone || "");
 
                 const initialPhotos = initialData.photos && initialData.photos.length > 0
                     ? initialData.photos
@@ -86,14 +139,17 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
                 setSelectedFiles([]);
             } else {
                 resetForm();
+                setContactName(user?.name || "");
+                setPhone(user?.phone || "");
             }
         }
-    }, [isOpen, initialData]);
+    }, [isOpen, initialData, user]);
 
     if (!isOpen) return null;
 
     function resetForm() {
         setName("");
+        setType("adoption");
         setSpecies("dog");
         setBreed("");
         setYears("0");
@@ -102,9 +158,9 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
         setGender("");
         setCity("Curitiba");
         setState("PR");
+        setDescription("");
         setContactName("");
         setPhone("");
-        setDescription("");
         setPhotos([]);
         setSelectedFiles([]);
         setErrorMessage(null);
@@ -159,17 +215,17 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
 
             const validatedData = createPetSchema.parse({
                 name,
-                type: "adoption", // Forçado fixo como adoção
+                type,
                 species,
-                breed: breed.trim() || undefined,
+                breed: breed.trim() ? breed.trim() : undefined,
                 age: totalAgeInMonths,
-                size: size || undefined,
-                gender: gender || undefined,
+                size: size ? size : undefined,
+                gender: gender ? gender : undefined,
                 city,
                 state,
+                description: description.trim() ? description.trim() : undefined,
                 contactName,
                 phone,
-                description: description.trim() || undefined,
             });
 
             const payload = {
@@ -191,8 +247,21 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
             if (error instanceof ZodError) {
                 setErrorMessage(error.issues[0].message);
             } else if (error instanceof AxiosError) {
+                console.error("DADOS QUE O BACKEND REJEITOU:", error.response?.data);
+
                 const responseData = error.response?.data;
-                setErrorMessage(responseData?.message || "Erro ao salvar as informações do pet.");
+                const serverMsg =
+                    typeof responseData === "object" && responseData !== null && "message" in responseData
+                        ? (responseData.message as string)
+                        : typeof responseData === "string"
+                            ? responseData
+                            : null;
+
+                setErrorMessage(
+                    serverMsg ||
+                    JSON.stringify(responseData) ||
+                    "Erro ao salvar as informações do pet. Verifique os campos."
+                );
             } else {
                 setErrorMessage("Erro ao realizar upload das imagens. Tente novamente.");
             }
@@ -222,10 +291,10 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
                         </div>
                         <div>
                             <h2 className="text-xl font-bold font-['Manrope'] text-[#2D2D2D] tracking-tight">
-                                {isEditing ? "Editar Anúncio de Adoção" : "Cadastrar Pet para Adoção"}
+                                {isEditing ? "Editar Anúncio" : "Cadastrar Anúncio de Pet"}
                             </h2>
                             <p className="text-xs text-[#6B7280] mt-0.5">
-                                Preencha os detalhes do pet para encontrar um novo lar responsável
+                                Preencha os detalhes para divulgar na comunidade
                             </p>
                         </div>
                     </div>
@@ -237,6 +306,40 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
                                 {errorMessage}
                             </div>
                         )}
+
+                        {/* Objetivo do Anúncio */}
+                        <div className="space-y-2">
+                            <label className="block text-xs font-bold text-[#6B7280] uppercase">Objetivo do Anúncio</label>
+                            <div className="grid grid-cols-3 gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setType("adoption")}
+                                    className={`py-2.5 px-3 rounded-2xl text-xs font-semibold border transition cursor-pointer ${type === "adoption" ? "bg-[#FF7A59] text-white border-[#FF7A59] shadow-xs" : "bg-[#F4F4F2] text-[#6B7280] border-[#E4E4E1] hover:bg-[#E4E4E1]"}`}
+                                >
+                                    Adoção
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setType("lost")}
+                                    className={`py-2.5 px-3 rounded-2xl text-xs font-semibold border transition cursor-pointer ${type === "lost" ? "bg-red-600 text-white border-red-600 shadow-xs" : "bg-[#F4F4F2] text-[#6B7280] border-[#E4E4E1] hover:bg-[#E4E4E1]"}`}
+                                >
+                                    Perdido
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setType("found")}
+                                    className={`py-2.5 px-3 rounded-2xl text-xs font-semibold border transition cursor-pointer ${type === "found" ? "bg-amber-600 text-white border-amber-600 shadow-xs" : "bg-[#F4F4F2] text-[#6B7280] border-[#E4E4E1] hover:bg-[#E4E4E1]"}`}
+                                >
+                                    Achado
+                                </button>
+                            </div>
+
+                            {currentDescription && (
+                                <p className="text-xs text-[#6B7280] bg-[#F4F4F2] p-3 rounded-2xl border border-[#E4E4E1] transition-all">
+                                    💡 <span className="font-medium text-[#2D2D2D]">Como funciona:</span> {currentDescription}
+                                </p>
+                            )}
+                        </div>
 
                         {/* Galeria de Fotos */}
                         <div>
@@ -305,13 +408,13 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
                             />
 
                             <div>
-                                <label className="block text-xs font-semibold text-[#2D2D2D] mb-1">
+                                <label className="block text-xs font-semibold text-[#2D2D2D] mb-1.5">
                                     Espécie <span className="text-[#FF7A59]">*</span>
                                 </label>
                                 <select
                                     value={species}
                                     onChange={(e) => setSpecies(e.target.value as "dog" | "cat" | "other")}
-                                    className="w-full bg-[#F4F4F2] border border-[#E4E4E1] rounded-2xl px-3 py-3 text-sm text-[#2D2D2D] focus:outline-none focus:border-[#FF7A59] transition shadow-xs"
+                                    className={selectClasses}
                                 >
                                     <option value="dog">Cachorro</option>
                                     <option value="cat">Gato</option>
@@ -330,14 +433,14 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
                             />
 
                             <div>
-                                <label className="block text-xs font-semibold text-[#2D2D2D] mb-1">
+                                <label className="block text-xs font-semibold text-[#2D2D2D] mb-1.5">
                                     Idade Aproximada
                                 </label>
                                 <div className="grid grid-cols-2 gap-2">
                                     <select
                                         value={years}
                                         onChange={(e) => setYears(e.target.value)}
-                                        className="w-full bg-[#F4F4F2] border border-[#E4E4E1] rounded-2xl px-2.5 py-3 text-sm text-[#2D2D2D] focus:outline-none focus:border-[#FF7A59] transition shadow-xs"
+                                        className={selectClasses}
                                     >
                                         {Array.from({ length: 21 }, (_, i) => (
                                             <option key={i} value={i}>{i} {i === 1 ? "ano" : "anos"}</option>
@@ -347,7 +450,7 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
                                     <select
                                         value={months}
                                         onChange={(e) => setMonths(e.target.value)}
-                                        className="w-full bg-[#F4F4F2] border border-[#E4E4E1] rounded-2xl px-2.5 py-3 text-sm text-[#2D2D2D] focus:outline-none focus:border-[#FF7A59] transition shadow-xs"
+                                        className={selectClasses}
                                     >
                                         {Array.from({ length: 12 }, (_, i) => (
                                             <option key={i} value={i}>{i} {i === 1 ? "mês" : "meses"}</option>
@@ -360,25 +463,25 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
                         {/* Porte e Gênero */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-semibold text-[#2D2D2D] mb-1">Porte</label>
+                                <label className="block text-xs font-semibold text-[#2D2D2D] mb-1.5">Porte</label>
                                 <select
                                     value={size}
                                     onChange={(e) => setSize(e.target.value)}
-                                    className="w-full bg-[#F4F4F2] border border-[#E4E4E1] rounded-2xl px-3 py-3 text-sm text-[#2D2D2D] focus:outline-none focus:border-[#FF7A59] transition shadow-xs"
+                                    className={selectClasses}
                                 >
                                     <option value="">Selecione o porte</option>
                                     <option value="small">Pequeno</option>
                                     <option value="medium">Médio</option>
-                                    <option value="large">Grande</option>
+                                    <option value="big">Grande</option>
                                 </select>
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-[#2D2D2D] mb-1">Sexo / Gênero</label>
+                                <label className="block text-xs font-semibold text-[#2D2D2D] mb-1.5">Sexo / Gênero</label>
                                 <select
                                     value={gender}
                                     onChange={(e) => setGender(e.target.value)}
-                                    className="w-full bg-[#F4F4F2] border border-[#E4E4E1] rounded-2xl px-3 py-3 text-sm text-[#2D2D2D] focus:outline-none focus:border-[#FF7A59] transition shadow-xs"
+                                    className={selectClasses}
                                 >
                                     <option value="">Selecione o sexo</option>
                                     <option value="male">Macho</option>
@@ -410,16 +513,15 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
                             </div>
                         </div>
 
-                        {/* Dados de Contato */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* Contato (Nome e Telefone) */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-[#E4E4E1]">
                             <Input
                                 required
                                 legend="Nome para Contato"
-                                placeholder="Seu nome"
+                                placeholder="Seu nome ou responsável"
                                 value={contactName}
                                 onChange={(e) => setContactName(e.target.value)}
                             />
-
                             <Input
                                 required
                                 legend="Telefone / WhatsApp"
@@ -431,7 +533,7 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
 
                         {/* Descrição */}
                         <div>
-                            <label className="block text-xs font-semibold text-[#2D2D2D] mb-1">
+                            <label className="block text-xs font-semibold text-[#2D2D2D] mb-1.5">
                                 História / Informações sobre o Pet
                             </label>
                             <textarea
@@ -449,7 +551,7 @@ export function CreatePetModal({ isOpen, onClose, initialData }: CreatePetModalP
                                 isLoading={isLoading}
                                 className="w-full bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold py-3.5 rounded-2xl shadow-sm text-sm transition cursor-pointer"
                             >
-                                {isEditing ? "Salvar Alterações" : "Publicar Anúncio de Adoção"}
+                                {isEditing ? "Salvar Alterações" : "Publicar Anúncio"}
                             </Button>
                         </div>
                     </form>

@@ -50,7 +50,6 @@ export function PetListCard({
       onClick={onClick}
       className="bg-[#FAFAF8] border border-[#E4E4E1] rounded-3xl overflow-hidden hover:border-[#FF7A59]/50 transition-all duration-300 cursor-pointer flex flex-col group relative shadow-xs hover:shadow-xl font-sans"
     >
-      {/* Imagem com Carrossel */}
       <div className="relative w-full aspect-[4/5] sm:aspect-square bg-[#F4F4F2] flex items-center justify-center overflow-hidden">
         {photos.length > 0 ? (
           <img
