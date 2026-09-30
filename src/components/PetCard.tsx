@@ -50,7 +50,7 @@ export function PetCard({
         setCurrentPhotoIndex((prev) => (prev === photos.length - 1 ? 0 : prev + 1));
     }
 
-    const handleCardClick = (e: React.MouseEvent) => {
+    const handleCardClick = () => {
         if (onClick) {
             onClick();
         } else if (onEdit) {
@@ -186,10 +186,10 @@ export function PetCard({
 
                 {/* Detalhes e Localização */}
                 <div className="space-y-2 pt-2 border-t border-[#E4E4E1]">
-                    {(pet.city || pet.location) && (
+                    {(pet.city) && (
                         <div className="flex items-center gap-1.5 text-xs text-[#6B7280]">
                             <FaLocationDot className="w-3.5 h-3.5 text-[#FF7A59] shrink-0" />
-                            <span className="truncate">{pet.city || pet.location}{pet.state ? `, ${pet.state}` : ""}</span>
+                            <span className="truncate">{pet.city}{pet.state ? `, ${pet.state}` : ""}</span>
                         </div>
                     )}
 

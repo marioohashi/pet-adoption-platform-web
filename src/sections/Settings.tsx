@@ -151,9 +151,7 @@ export function Settings() {
             </div>
 
             {/* Accordion controlando as seções principais */}
-            <Accordion type="single" collapsible defaultValue="profile" className="space-y-4">
-
-                {/* Seção 1: Perfil, Avatar e Informações Pessoais */}
+            <Accordion defaultValue={["profile"]} className="space-y-4">
                 <AccordionItem value="profile" className="bg-white rounded-3xl border border-[#E4E4E1] px-6 shadow-xs overflow-hidden">
                     <AccordionTrigger className="hover:no-underline py-5 cursor-pointer">
                         <div className="flex items-center gap-3">
