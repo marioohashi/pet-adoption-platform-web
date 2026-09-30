@@ -1,1 +1,26 @@
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --font-heading: "Manrope", sans-serif;
+
+  --color-primary: #FF7A59;
+  --color-secondary: #7BAE7F;
+  --color-accent: #FFD166;
+  --color-background: #FAFAF8;
+  --color-surface: #F4F4F2;
+  --color-border: #E4E4E1;
+  --color-foreground: #2D2D2D;
+  --color-muted: #6B7280;
+}
+
+/* Regras globais baseadas no novo design system */
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}

@@ -4,7 +4,7 @@ import { AppRoutes } from "./routes";
 
 const queryClient = new QueryClient();
 
-export function App() {
+export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -13,5 +13,3 @@ export function App() {
     </QueryClientProvider>
   );
 }
-
-export default App;

@@ -104,41 +104,41 @@ export function AuthModal({ isOpen, onClose, initialMode = "signin" }: AuthModal
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn">
-            <div className="bg-gray-800 border border-gray-700/80 rounded-2xl w-full max-w-md p-6 shadow-2xl relative text-gray-100">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn font-sans">
+            <div className="bg-[#FAFAF8] border border-[#E4E4E1] rounded-3xl w-full max-w-md p-6 sm:p-8 shadow-2xl relative text-[#2D2D2D]">
 
                 {/* Botão Fechar */}
                 <button
                     onClick={onClose}
                     type="button"
-                    className="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-700/50 transition cursor-pointer"
+                    className="absolute top-5 right-5 text-[#6B7280] hover:text-[#2D2D2D] p-2.5 rounded-xl hover:bg-[#F4F4F2] transition cursor-pointer"
                 >
                     <FaXmark className="w-5 h-5" />
                 </button>
 
                 {/* Cabeçalho */}
                 <div className="flex flex-col items-center text-center mb-6">
-                    <div className="p-3 bg-amber-500/10 rounded-2xl mb-2 text-amber-400">
+                    <div className="p-3.5 bg-[#FF7A59]/10 rounded-2xl mb-3 text-[#FF7A59]">
                         <FaPaw className="w-6 h-6" />
                     </div>
-                    <h2 className="text-xl font-bold text-white">
+                    <h2 className="text-2xl font-bold font-['Manrope'] text-[#2D2D2D] tracking-tight">
                         {mode === "signin" ? "Bem-vindo de volta!" : "Crie sua conta"}
                     </h2>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-xs text-[#6B7280] mt-1 leading-relaxed">
                         {mode === "signin"
-                            ? "Acesse sua conta para continuar no Aumatch"
+                            ? "Acesse sua conta para continuar no Adote2Pets"
                             : "Cadastre-se para anunciar ou adotar um pet"}
                     </p>
                 </div>
 
                 {/* Alternador de Abas */}
-                <div className="grid grid-cols-2 bg-gray-900/60 p-1 rounded-xl mb-6 border border-gray-700/50 text-sm font-semibold">
+                <div className="grid grid-cols-2 bg-[#F4F4F2] p-1.5 rounded-2xl mb-6 border border-[#E4E4E1] text-sm font-semibold">
                     <button
                         type="button"
                         onClick={() => handleSwitchMode("signin")}
-                        className={`py-2 rounded-lg transition cursor-pointer ${mode === "signin"
-                                ? "bg-amber-500 text-gray-950 shadow-sm"
-                                : "text-gray-400 hover:text-white"
+                        className={`py-2.5 rounded-xl transition cursor-pointer ${mode === "signin"
+                            ? "bg-[#FF7A59] text-white shadow-xs"
+                            : "text-[#6B7280] hover:text-[#2D2D2D]"
                             }`}
                     >
                         Entrar
@@ -146,9 +146,9 @@ export function AuthModal({ isOpen, onClose, initialMode = "signin" }: AuthModal
                     <button
                         type="button"
                         onClick={() => handleSwitchMode("signup")}
-                        className={`py-2 rounded-lg transition cursor-pointer ${mode === "signup"
-                                ? "bg-amber-500 text-gray-950 shadow-sm"
-                                : "text-gray-400 hover:text-white"
+                        className={`py-2.5 rounded-xl transition cursor-pointer ${mode === "signup"
+                            ? "bg-[#FF7A59] text-white shadow-xs"
+                            : "text-[#6B7280] hover:text-[#2D2D2D]"
                             }`}
                     >
                         Cadastrar
@@ -157,7 +157,7 @@ export function AuthModal({ isOpen, onClose, initialMode = "signin" }: AuthModal
 
                 {/* Mensagem de Erro */}
                 {errorMessage && (
-                    <div className="bg-red-500/15 border border-red-500/30 text-red-300 text-xs p-3 rounded-lg mb-4 text-center">
+                    <div className="bg-red-50 border border-red-200 text-red-600 text-xs p-3 rounded-xl mb-4 text-center font-medium">
                         {errorMessage}
                     </div>
                 )}
@@ -192,14 +192,18 @@ export function AuthModal({ isOpen, onClose, initialMode = "signin" }: AuthModal
                         onChange={(e) => setPassword(e.target.value)}
                     />
 
-                    <Button type="submit" isLoading={isLoading} className="mt-2 bg-amber-500 hover:bg-amber-600">
+                    <Button
+                        type="submit"
+                        isLoading={isLoading}
+                        className="mt-2 bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold py-3 rounded-2xl shadow-sm text-sm transition"
+                    >
                         {mode === "signin" ? "Entrar" : "Criar Conta"}
                     </Button>
 
                     {/* Divisor */}
-                    <div className="relative my-1 flex items-center justify-center">
-                        <div className="w-full border-t border-gray-700" />
-                        <span className="absolute bg-gray-800 px-3 text-[10px] uppercase text-gray-400 font-medium">
+                    <div className="relative my-2 flex items-center justify-center">
+                        <div className="w-full border-t border-[#E4E4E1]" />
+                        <span className="absolute bg-[#FAFAF8] px-3 text-[10px] uppercase text-[#6B7280] font-semibold tracking-wider">
                             ou
                         </span>
                     </div>
@@ -208,7 +212,7 @@ export function AuthModal({ isOpen, onClose, initialMode = "signin" }: AuthModal
                     <button
                         type="button"
                         onClick={() => (window.location.href = "http://localhost:3333/auth/google")}
-                        className="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-100 text-gray-700 font-semibold py-2.5 px-4 rounded-lg text-sm transition cursor-pointer"
+                        className="w-full flex items-center justify-center gap-2.5 bg-[#F4F4F2] hover:bg-[#E4E4E1] text-[#2D2D2D] font-semibold py-3 px-4 rounded-2xl text-sm transition cursor-pointer border border-[#E4E4E1] shadow-xs"
                     >
                         <FcGoogle className="w-5 h-5" />
                         <span>Continuar com o Google</span>

@@ -11,9 +11,16 @@ export const Species = {
 } as const;
 export type Species = (typeof Species)[keyof typeof Species];
 
+export const PetType = {
+  ADOPTION: "adoption",
+  LOST: "lost",
+  FOUND: "found",
+} as const;
+export type PetType = (typeof PetType)[keyof typeof PetType];
+
 export const PetStatus = {
-  AVAILABLE: "available",
-  IN_PROCESS: "in_process",
+  ACTIVE: "active",
+  RESOLVED: "resolved",
   ADOPTED: "adopted",
 } as const;
 export type PetStatus = (typeof PetStatus)[keyof typeof PetStatus];
@@ -51,19 +58,44 @@ export interface AuthResponse {
   token: string;
 }
 
+export interface Ngo {
+  id: string;
+  name: string;
+  description?: string | null;
+  city: string;
+  state: string;
+  phone: string;
+  pixKey?: string | null;
+  logo?: string | null;
+  userId: string;
+  user?: User;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Pet {
   id: string;
   name: string;
-  species: string;
-  breed?: string;
-  age?: number;
-  size?: string;
-  sex?: string;
-  description?: string;
-  photos?: string[]; // 🟢 Lista de fotos da galeria
-  photo?: string;    // Foto principal
-  status?: string;
+  species: Species | string;
+  breed?: string | null;
+  age?: number | null;
+  gender?: PetSex | string | null;
+  size?: PetSize | string | null;
+  type: PetType | string;
+  status: PetStatus | string;
+  city: string;
+  state: string;
+  date?: string | null;
+  contactName: string;
+  phone: string;
+  description?: string | null;
+  photos?: string[];
+  photo?: string | null;
+  reward?: string | null;
+  userId: string;
+  user?: User;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CreatePetInput {
@@ -71,12 +103,19 @@ export interface CreatePetInput {
   species: Species;
   breed?: string;
   age?: number;
+  gender?: PetSex;
   size?: PetSize;
-  sex?: PetSex;
+  type?: PetType;
+  city: string;
+  state: string;
+  date?: string;
+  contactName: string;
+  phone: string;
   description?: string;
+  photos?: string[];
   photo?: string;
+  reward?: string;
 }
-
 
 export interface Pagination {
   page: number;
@@ -86,13 +125,20 @@ export interface Pagination {
 }
 
 export interface PetsResponse {
-  animals: Pet[];
+  pets?: Pet[];
+  animals?: Pet[]; // Suporte temporário a legado caso alguma rota antiga retorne "animals"
   pagination: Pagination;
 }
 
 export interface PetFilters {
+  type?: PetType | string;
   species?: Species | "";
   size?: PetSize | "";
+  gender?: PetSex | "";
   sex?: PetSex | "";
+  city?: string;
+  search?: string;
   age?: string;
+  page?: number;
+  perPage?: number;
 }

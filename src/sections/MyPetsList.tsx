@@ -3,18 +3,21 @@ import { useState } from "react";
 import { getMyPets, deletePet } from "../services/petService";
 import { PetListCard } from "./PetListCard";
 import { PetDetailModal } from "../modals/PetDetailModal";
-import { CreatePetModal } from "../modals/CreatePetModal";
 import { ConfirmModal } from "../modals/ConfirmModal";
-import { FaPlus, FaPaw } from "react-icons/fa6";
+import { PetFormModal } from "../modals/PetFormModal"; // <-- Importado aqui
+import { FaPlus, FaPaw, FaFilter } from "react-icons/fa6";
 import type { Pet } from "../types";
+
+type TabFilter = "todos" | "adocao" | "perdido" | "achado";
 
 export function MyPetsList() {
     const queryClient = useQueryClient();
     const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
     const [editingPet, setEditingPet] = useState<Pet | null>(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
     const [petToDelete, setPetToDelete] = useState<Pet | null>(null);
+
+    const [activeTab, setActiveTab] = useState<TabFilter>("todos");
 
     const { data: pets = [], isLoading, isError } = useQuery<Pet[]>({
         queryKey: ["my-pets"],
@@ -26,12 +29,25 @@ export function MyPetsList() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["my-pets"] });
             queryClient.invalidateQueries({ queryKey: ["pets"] });
-            setPetToDelete(null); // Fecha o modal após o sucesso
+            setPetToDelete(null);
+        },
+        onError: (error: any) => {
+            alert(error.message || "Não foi possível excluir o pet.");
         },
     });
 
+    // const updateStatusMutation = useMutation({
+    //     mutationFn: async ({ id, newStatus }: { id: string; newStatus: string }) => {
+    //         return updatePet(id, { status: newStatus });
+    //     },
+    //     onSuccess: () => {
+    //         queryClient.invalidateQueries({ queryKey: ["my-pets"] });
+    //         queryClient.invalidateQueries({ queryKey: ["pets"] });
+    //     },
+    // });
+
     function handleDeleteClick(pet: Pet) {
-        setPetToDelete(pet); // Abre o modal bonito ao invés do confirm()
+        setPetToDelete(pet);
     }
 
     function confirmDelete() {
@@ -39,84 +55,158 @@ export function MyPetsList() {
         deleteMutation.mutate(petToDelete.id);
     }
 
-    function handleCloseFormModal() {
-        setIsCreateModalOpen(false);
-        setEditingPet(null);
+    function matchTab(pet: any, tab: TabFilter) {
+        if (tab === "todos") return true;
+
+        const val = (pet.type || pet.category || "").toLowerCase();
+
+        if (tab === "adocao") {
+            return val.includes("adocao") || val.includes("adoption") || val.includes("doacao");
+        }
+        if (tab === "perdido") {
+            return val.includes("perdido") || val.includes("lost");
+        }
+        if (tab === "achado") {
+            return val.includes("achado") || val.includes("found");
+        }
+        return false;
     }
 
+    const filteredPets = pets.filter((pet) => matchTab(pet, activeTab));
+
+    const counts = {
+        todos: pets.length,
+        adocao: pets.filter((p) => matchTab(p, "adocao")).length,
+        perdido: pets.filter((p) => matchTab(p, "perdido")).length,
+        achado: pets.filter((p) => matchTab(p, "achado")).length,
+    };
+
     if (isLoading) {
-        return <p className="text-center py-12 text-gray-300">Carregando seus pets...</p>;
+        return <p className="text-center py-12 text-[#6B7280] font-sans">Carregando seus pets...</p>;
     }
 
     if (isError) {
-        return <p className="text-center py-12 text-red-400">Erro ao carregar seus pets.</p>;
+        return <p className="text-center py-12 text-red-500 font-sans">Erro ao carregar seus pets do servidor.</p>;
     }
 
     return (
-        <section className="w-full">
-            {/* Cabeçalho da Aba */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <section className="w-full font-sans">
+            {/* Cabeçalho */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div>
-                    <h3 className="text-3xl font-bold text-white mb-1">Meus Pets Cadastrados</h3>
-                    <p className="text-sm text-gray-400">
-                        Gerencie e edite as informações dos pets que você colocou para adoção
+                    <h3 className="text-3xl font-bold font-['Manrope'] text-[#2D2D2D] mb-1 tracking-tight">
+                        Meus Pets Cadastrados
+                    </h3>
+                    <p className="text-sm text-[#6B7280] leading-relaxed">
+                        Gerencie seus anúncios de adoção, alertas de perdidos e animais achados.
                     </p>
                 </div>
             </div>
 
-            {/* Lista Vazia */}
-            {pets.length === 0 ? (
-                <div className="bg-gray-800/40 border border-gray-700/60 rounded-2xl p-12 text-center space-y-4">
-                    <FaPaw className="w-12 h-12 text-gray-600 mx-auto" />
-                    <h4 className="text-lg font-semibold text-gray-200">Nenhum pet anunciado ainda</h4>
-                    <p className="text-sm text-gray-400 max-w-md mx-auto">
-                        Você ainda não cadastrou nenhum amiguinho. Clique no botão acima para criar seu primeiro anúncio!
-                    </p>
-                </div>
-            ) : (
-                /* Grid de Cards */
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {pets.map((pet) => (
-                        <PetListCard
-                            key={pet.id}
-                            pet={pet}
-                            showActions={true}
-                            onClick={() => setSelectedPet(pet)}
-                            onEdit={(p) => setEditingPet(p)}
-                            onDelete={(p) => handleDeleteClick(p)} // 🟢 Chama o gatilho do modal
-                        />
-                    ))}
-                </div>
-            )}
-            <div className="flex justify-center pt-2 my-10">
+            {/* Abas de Filtro responsivas */}
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 pb-4 mb-8">
                 <button
-                    onClick={() => setIsCreateModalOpen(true)}
-                    className="bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-amber-500/10 shrink-0"
+                    onClick={() => setActiveTab("todos")}
+                    className={`px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2 ${activeTab === "todos"
+                        ? "bg-[#FF7A59] text-white shadow-sm"
+                        : "bg-[#F4F4F2] text-[#6B7280] hover:bg-[#E4E4E1] hover:text-[#2D2D2D]"
+                        }`}
                 >
-                    <FaPlus className="w-4 h-4" />
-                    Adicionar Pet
+                    <FaFilter className="w-3.5 h-3.5 shrink-0" />
+                    <span>Todos ({counts.todos})</span>
+                </button>
+                <button
+                    onClick={() => setActiveTab("adocao")}
+                    className={`px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer text-center ${activeTab === "adocao"
+                        ? "bg-[#FF7A59] text-white shadow-sm"
+                        : "bg-[#F4F4F2] text-[#6B7280] hover:bg-[#E4E4E1] hover:text-[#2D2D2D]"
+                        }`}
+                >
+                    🐾 Adoção ({counts.adocao})
+                </button>
+                <button
+                    onClick={() => setActiveTab("perdido")}
+                    className={`px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer text-center ${activeTab === "perdido"
+                        ? "bg-[#FF7A59] text-white shadow-sm"
+                        : "bg-[#F4F4F2] text-[#6B7280] hover:bg-[#E4E4E1] hover:text-[#2D2D2D]"
+                        }`}
+                >
+                    🚨 Perdidos ({counts.perdido})
+                </button>
+                <button
+                    onClick={() => setActiveTab("achado")}
+                    className={`px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all cursor-pointer text-center ${activeTab === "achado"
+                        ? "bg-[#FF7A59] text-white shadow-sm"
+                        : "bg-[#F4F4F2] text-[#6B7280] hover:bg-[#E4E4E1] hover:text-[#2D2D2D]"
+                        }`}
+                >
+                    🔍 Achados ({counts.achado})
                 </button>
             </div>
 
-            {/* Modal de Detalhes do Pet */}
+            {/* Listagem Vazia */}
+            {filteredPets.length === 0 ? (
+                <div className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-3xl p-12 text-center space-y-4">
+                    <div className="w-16 h-16 bg-[#FF7A59]/10 rounded-2xl flex items-center justify-center mx-auto text-[#FF7A59]">
+                        <FaPaw className="w-8 h-8" />
+                    </div>
+                    <h4 className="text-lg font-bold font-['Manrope'] text-[#2D2D2D]">Nenhum anúncio encontrado</h4>
+                    <p className="text-sm text-[#6B7280] max-w-md mx-auto leading-relaxed">
+                        Você não possui nenhum pet cadastrado nesta categoria no momento.
+                    </p>
+                </div>
+            ) : (
+                /* Grid de Cards com Ferramenta de Status */
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    {filteredPets.map((pet) => (
+                        <div key={pet.id} className="flex flex-col gap-2">
+                            <PetListCard
+                                pet={pet}
+                                showActions={true}
+                                onClick={() => setSelectedPet(pet)}
+                                onEdit={(p) => setEditingPet(p)}
+                                onDelete={(p) => handleDeleteClick(p)}
+                            />
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Botão Inferior */}
+            <div className="flex justify-center pt-6 my-10">
+                <button
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold px-6 py-3.5 rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:shadow-md shrink-0 text-sm"
+                >
+                    <FaPlus className="w-4 h-4" />
+                    Adicionar Novo Anúncio
+                </button>
+            </div>
+
+            {/* Modais */}
             <PetDetailModal
                 pet={selectedPet}
                 onClose={() => setSelectedPet(null)}
-                showContactButton={false}
+                isOpen={Boolean(selectedPet)}
             />
 
-            {/* Modal de Criação / Edição de Pet */}
-            <CreatePetModal
-                isOpen={isCreateModalOpen || Boolean(editingPet)}
+            {/* Modal para Criação de Novo Pet */}
+            <PetFormModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+            />
+
+            {/* Modal para Edição de Pet Existente */}
+            <PetFormModal
+                isOpen={Boolean(editingPet)}
                 initialData={editingPet}
-                onClose={handleCloseFormModal}
+                onClose={() => setEditingPet(null)}
             />
 
-            {/* 🟢 3. Modal Bonito de Confirmação de Exclusão */}
             <ConfirmModal
                 isOpen={Boolean(petToDelete)}
-                title={`Excluir "${petToDelete?.name}"?`}
-                message="Tem certeza que deseja remover este anúncio do sistema? Esta ação é irreversível e o pet deixará de aparecer para adoção."
+                title={`Excluir "${petToDelete?.name || 'este pet'}"?`}
+                message="Tem certeza que deseja remover este anúncio do sistema? Esta ação é irreversível."
                 confirmText="Sim, excluir"
                 cancelText="Cancelar"
                 onConfirm={confirmDelete}

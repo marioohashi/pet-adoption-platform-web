@@ -1,229 +1,268 @@
-import { useState, useEffect } from "react";
-import { FaXmark, FaPaw, FaChevronLeft, FaChevronRight, FaMaximize } from "react-icons/fa6";
-import type { Pet } from "../types/index";
+import { useState } from "react";
+import { FaXmark, FaLocationDot, FaCalendarDay, FaWhatsapp, FaChevronLeft, FaChevronRight, FaPaw, FaExpand } from "react-icons/fa6";
 import { formatAge } from "../utils/formatAge";
-import { useEscapeKey } from "../hooks/useEscapeKey";
+import { PET_TYPES } from "../utils/petEnums";
+import type { Pet } from "../types";
 
 interface PetDetailModalProps {
     pet: Pet | null;
-    isOpen?: boolean;
+    isOpen: boolean;
     onClose: () => void;
-    onRequireAuth?: () => void;
-    showContactButton?: boolean;
 }
 
-export function PetDetailModal({
-    pet,
-    isOpen = true,
-    onClose,
-    onRequireAuth,
-    showContactButton = true,
-}: PetDetailModalProps) {
-    const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
-    const [isFullScreen, setIsFullScreen] = useState(false); // 🟢 Estado para controlar a tela cheia da foto
-
-    // 🟢 Fecha o fullscreen com Esc se estiver aberto, senão fecha o modal
-    useEscapeKey(() => {
-        if (isFullScreen) {
-            setIsFullScreen(false);
-        } else {
-            onClose();
-        }
-    }, isOpen);
-
-    useEffect(() => {
-        setSelectedPhotoIndex(0);
-        setIsFullScreen(false);
-    }, [pet]);
+export function PetDetailModal({ pet, isOpen, onClose }: PetDetailModalProps) {
+    const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+    const [isFullScreen, setIsFullScreen] = useState(false);
 
     if (!isOpen || !pet) return null;
 
-    const allPhotos = pet.photos && pet.photos.length > 0
-        ? pet.photos
-        : pet.photo ? [pet.photo] : [];
+    // Normaliza todas as fotos possíveis do pet em um array único
+    const photos =
+        pet.photos && pet.photos.length > 0 ? pet.photos :
+            pet.photo ? [pet.photo] : [];
 
-    const activePhoto = allPhotos[selectedPhotoIndex] || pet.photo;
-    const hasMultiplePhotos = allPhotos.length > 1;
+    const hasMultiplePhotos = photos.length > 1;
+
+    const isOccurrence = pet.type === "lost" || pet.type === "found" || Boolean(pet.date || pet.city);
+    const formattedAge = pet.age ? formatAge(pet.age) : null;
+    const cleanPhone = (pet.phone || "").replace(/\D/g, "");
+
+    const whatsappMessage = encodeURIComponent(
+        `Olá ${pet.contactName || "Tutor"}, vi a ocorrência sobre o pet "${pet.name || "Pet"}" e gostaria de ajudar/obter mais informações.`
+    );
+    const whatsappUrl = cleanPhone ? `https://wa.me/${cleanPhone}?text=${whatsappMessage}` : "#";
+
+    const badgeColor =
+        pet.type === 'lost' ? 'bg-red-600 text-white' :
+            pet.type === 'found' ? 'bg-amber-600 text-white' :
+                'bg-[#FF7A59] text-white';
+
+    const typeLabel =
+        pet.type === 'lost' ? 'Perdido' :
+            pet.type === 'found' ? 'Achado' :
+                (PET_TYPES[pet.type as keyof typeof PET_TYPES] || "Adoção");
 
     function handlePrevPhoto(e: React.MouseEvent) {
         e.stopPropagation();
-        setSelectedPhotoIndex((prev) => (prev === 0 ? allPhotos.length - 1 : prev - 1));
+        setCurrentPhotoIndex((prev) => (prev === 0 ? photos.length - 1 : prev - 1));
     }
 
     function handleNextPhoto(e: React.MouseEvent) {
         e.stopPropagation();
-        setSelectedPhotoIndex((prev) => (prev === allPhotos.length - 1 ? 0 : prev + 1));
+        setCurrentPhotoIndex((prev) => (prev === photos.length - 1 ? 0 : prev + 1));
     }
-
-    function handleContactTutor() {
-        if (onRequireAuth) {
-            onRequireAuth();
-        } else {
-            alert(`Mensagem enviada para o tutor do pet ${pet?.name}!`);
-        }
-    }
-
-    const formattedAge = formatAge(pet.age);
 
     return (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-fadeIn">
-            {/* Container Principal do Modal */}
-            <div className="bg-gray-800 border border-gray-700/80 rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl relative text-gray-100 p-8 sm:p-10 space-y-6 max-h-[92vh] overflow-y-auto">
-
-                {/* Botão Fechar Modal */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs font-sans animate-fadeIn">
+            <div
+                className="bg-[#FAFAF8] border border-[#E4E4E1] rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Botão de Fechar Principal */}
                 <button
                     onClick={onClose}
                     type="button"
-                    className="absolute top-5 right-5 bg-gray-900/70 hover:bg-gray-900 text-gray-300 hover:text-white p-2.5 rounded-xl transition cursor-pointer z-20 backdrop-blur-sm shadow-md"
-                    title="Fechar (Esc)"
+                    className="absolute top-4 right-4 z-30 bg-[#2D2D2D]/60 hover:bg-[#2D2D2D]/80 text-white p-2.5 rounded-full transition cursor-pointer backdrop-blur-sm shadow-md"
+                    title="Fechar"
                 >
-                    <FaXmark className="w-5 h-5" />
+                    <FaXmark className="w-4 h-4" />
                 </button>
 
-                {/* Foto do Pet em Destaque (Clicável para expandir) */}
-                <div
-                    onClick={() => activePhoto && setIsFullScreen(true)}
-                    className="relative w-full aspect-[16/10] bg-gray-900 rounded-2xl overflow-hidden flex items-center justify-center border border-gray-700/50 group shadow-inner cursor-zoom-in"
-                    title="Clique para ver a foto em tela cheia"
-                >
-                    {activePhoto ? (
-                        <img
-                            src={activePhoto}
-                            alt={pet.name}
-                            className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
-                        />
+                {/* Seção da Imagem / Galeria */}
+                <div className="relative w-full aspect-[4/3] sm:h-80 bg-[#F4F4F2] overflow-hidden shrink-0 group">
+                    {photos.length > 0 ? (
+                        <div
+                            className="relative w-full h-full cursor-zoom-in"
+                            onClick={() => setIsFullScreen(true)}
+                        >
+                            <img
+                                src={photos[currentPhotoIndex]}
+                                alt={pet.name || "Pet"}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                            />
+                            {/* Dica visual ao passar o mouse para ampliar */}
+                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <span className="bg-black/60 text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 backdrop-blur-md">
+                                    <FaExpand className="w-3.5 h-3.5" /> Clique para ampliar
+                                </span>
+                            </div>
+                        </div>
                     ) : (
-                        <FaPaw className="w-20 h-20 text-gray-700" />
-                    )}
-
-                    {/* Ícone indicativo de zoom no hover */}
-                    {activePhoto && (
-                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <span className="bg-black/70 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-lg">
-                                <FaMaximize className="w-3.5 h-3.5" /> Ampliar foto
-                            </span>
+                        <div className="w-full h-full flex items-center justify-center">
+                            <FaPaw className="w-16 h-16 text-[#E4E4E1]" />
                         </div>
                     )}
 
-                    {/* Setas de Navegação */}
+                    {/* Setas de Navegação (se houver mais de uma foto) */}
                     {hasMultiplePhotos && (
                         <>
                             <button
                                 type="button"
                                 onClick={handlePrevPhoto}
-                                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/90 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-pointer backdrop-blur-md shadow-lg"
+                                className="absolute left-3 top-1/2 -translate-y-1/2 bg-[#2D2D2D]/60 hover:bg-[#2D2D2D]/80 text-white p-2.5 rounded-full transition z-20 cursor-pointer backdrop-blur-sm shadow-md"
                                 title="Foto anterior"
                             >
-                                <FaChevronLeft className="w-5 h-5" />
+                                <FaChevronLeft className="w-4 h-4" />
                             </button>
 
                             <button
                                 type="button"
                                 onClick={handleNextPhoto}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/90 text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10 cursor-pointer backdrop-blur-md shadow-lg"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 bg-[#2D2D2D]/60 hover:bg-[#2D2D2D]/80 text-white p-2.5 rounded-full transition z-20 cursor-pointer backdrop-blur-sm shadow-md"
                                 title="Próxima foto"
                             >
-                                <FaChevronRight className="w-5 h-5" />
+                                <FaChevronRight className="w-4 h-4" />
                             </button>
-
-                            {/* Indicadores de Página */}
-                            <div className="absolute bottom-4 inset-x-0 flex items-center justify-center gap-2 z-10 pointer-events-none">
-                                {allPhotos.map((_, idx) => (
-                                    <span
-                                        key={idx}
-                                        className={`h-2 rounded-full transition-all shadow-md ${selectedPhotoIndex === idx
-                                            ? "w-6 bg-amber-400"
-                                            : "w-2 bg-white/50 hover:bg-white/80"
-                                            }`}
-                                    />
-                                ))}
-                            </div>
                         </>
                     )}
+
+                    {/* Badge de Tipo e Recompensa */}
+                    <div className="absolute top-4 left-4 z-20 flex flex-wrap gap-2 pointer-events-none">
+                        <span className={`text-xs px-3.5 py-1.5 rounded-full font-bold shadow-xs ${badgeColor}`}>
+                            {typeLabel}
+                        </span>
+
+                        {pet.reward && (
+                            <span className="text-xs px-3.5 py-1.5 rounded-full bg-amber-400 text-gray-950 font-bold shadow-xs">
+                                {pet.reward}
+                            </span>
+                        )}
+                    </div>
                 </div>
 
-                {/* Miniaturas da Galeria */}
+                {/* Miniaturas da Galeria (Thumbnail Strip) */}
                 {hasMultiplePhotos && (
-                    <div className="flex items-center justify-center gap-3 overflow-x-auto py-1">
-                        {allPhotos.map((photoUrl, idx) => (
+                    <div className="bg-[#F4F4F2] px-4 py-3 border-b border-[#E4E4E1] flex items-center gap-2 overflow-x-auto">
+                        {photos.map((photo, idx) => (
                             <button
                                 key={idx}
-                                onClick={() => setSelectedPhotoIndex(idx)}
-                                className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition shrink-0 cursor-pointer shadow-md ${selectedPhotoIndex === idx
-                                    ? "border-amber-500 scale-105 shadow-amber-500/20"
-                                    : "border-gray-700 opacity-60 hover:opacity-100"
+                                type="button"
+                                onClick={() => setCurrentPhotoIndex(idx)}
+                                className={`relative w-14 h-14 rounded-xl overflow-hidden shrink-0 border-2 transition cursor-pointer ${currentPhotoIndex === idx ? "border-[#FF7A59] scale-105 shadow-md" : "border-transparent opacity-70 hover:opacity-100"
                                     }`}
                             >
-                                <img src={photoUrl} alt="" className="w-full h-full object-cover" />
+                                <img src={photo} alt={`Miniatura ${idx + 1}`} className="w-full h-full object-cover" />
                             </button>
                         ))}
                     </div>
                 )}
 
-                {/* Cabeçalho */}
-                <div className="flex items-start justify-between border-b border-gray-700/60 pb-5 gap-4">
-                    <div>
-                        <h2 className="text-3xl font-bold text-white tracking-tight">{pet.name}</h2>
-                        <p className="text-sm text-gray-400 mt-1">
-                            {pet.breed || "Sem raça definida"} {formattedAge ? `• ${formattedAge}` : ""}
-                        </p>
+                {/* Conteúdo do Detalhe */}
+                <div className="p-6 sm:p-8 flex-1 flex flex-col justify-between gap-6">
+                    <div className="space-y-4">
+                        <div>
+                            <div className="flex items-center justify-between gap-2">
+                                <h3 className="text-2xl sm:text-3xl font-bold font-['Manrope'] text-[#2D2D2D]">
+                                    {pet.name || "Sem Nome"}
+                                </h3>
+                            </div>
+                            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mt-1">
+                                {pet.breed || "Raça não informada"}
+                                {formattedAge ? ` • ${formattedAge}` : ""}
+                                {pet.gender ? ` • ${pet.gender === 'male' ? 'Macho' : 'Fêmea'}` : ""}
+                            </p>
+                        </div>
+
+                        {/* Descrição */}
+                        {pet.description && (
+                            <div className="bg-[#F4F4F2] border border-[#E4E4E1] rounded-2xl p-4">
+                                <h4 className="text-xs font-bold text-[#2D2D2D] uppercase tracking-wider mb-1">Sobre o ocorrido / Descrição</h4>
+                                <p className="text-sm text-[#6B7280] leading-relaxed">
+                                    {pet.description}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Informações Específicas (Localização e Data) */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                            {(pet.state || pet.city) && (
+                                <div className="flex items-center gap-3 bg-[#F4F4F2] border border-[#E4E4E1] p-3.5 rounded-2xl text-xs text-[#2D2D2D]">
+                                    <div className="p-2.5 bg-[#FF7A59]/10 text-[#FF7A59] rounded-xl shrink-0">
+                                        <FaLocationDot className="w-4 h-4" />
+                                    </div>
+                                    <div className="overflow-hidden">
+                                        <p className="text-[10px] text-[#6B7280] font-semibold uppercase">Localização</p>
+                                        <span className="font-medium truncate block">{pet.state || `${pet.city}${pet.state ? `, ${pet.state}` : ''}`}</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {(pet.date || pet.createdAt) && isOccurrence && (
+                                <div className="flex items-center gap-3 bg-[#F4F4F2] border border-[#E4E4E1] p-3.5 rounded-2xl text-xs text-[#2D2D2D]">
+                                    <div className="p-2.5 bg-[#FF7A59]/10 text-[#FF7A59] rounded-xl shrink-0">
+                                        <FaCalendarDay className="w-4 h-4" />
+                                    </div>
+                                    <div className="overflow-hidden">
+                                        <p className="text-[10px] text-[#6B7280] font-semibold uppercase">
+                                            {pet.type === "lost" ? "Desaparecido em" : "Encontrado em"}
+                                        </p>
+                                        <span className="font-medium truncate block">{pet.date || pet.createdAt?.substring(0, 10)}</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                    <span className="text-xs font-semibold px-3.5 py-1.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
-                        {pet.status === "available" ? "Disponível para Adoção" : pet.status}
-                    </span>
+
+                    {/* Rodapé com Ações / Contato */}
+                    <div className="pt-4 border-t border-[#E4E4E1] flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <div className="text-xs text-[#6B7280]">
+                            {pet.contactName ? (
+                                <span>Responsável pelo contato: <strong className="text-[#2D2D2D]">{pet.contactName}</strong></span>
+                            ) : (
+                                <span>Rede de Apoio • Proteção Animal</span>
+                            )}
+                        </div>
+
+                        {cleanPhone ? (
+                            <a
+                                href={whatsappUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] text-white font-semibold py-3 px-6 rounded-2xl transition text-xs shadow-sm cursor-pointer"
+                            >
+                                <FaWhatsapp className="w-4 h-4" /> Entrar em Contato ({pet.contactName || "WhatsApp"})
+                            </a>
+                        ) : (
+                            <button
+                                onClick={onClose}
+                                type="button"
+                                className="w-full sm:w-auto bg-[#2D2D2D] hover:bg-black text-white text-xs font-semibold px-6 py-3 rounded-2xl transition cursor-pointer"
+                            >
+                                Fechar Detalhes
+                            </button>
+                        )}
+                    </div>
                 </div>
-
-                {/* Sobre e Ação */}
-                {pet.description && (
-                    <div className="bg-gray-900/50 border border-gray-700/40 p-5 rounded-2xl space-y-2">
-                        <h4 className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Sobre o pet</h4>
-                        <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-line">{pet.description}</p>
-                    </div>
-                )}
-
-                {showContactButton && (
-                    <button
-                        onClick={handleContactTutor}
-                        className="w-full bg-amber-500 hover:bg-amber-600 text-gray-950 font-bold py-4 rounded-xl transition cursor-pointer shadow-lg shadow-amber-500/10 text-base"
-                    >
-                        Entrar em contato com tutor
-                    </button>
-                )}
-
             </div>
 
-            {/* 🟢 MODAL DE TELA CHEIA (LIGHTBOX) */}
-            {isFullScreen && activePhoto && (
+            {/* Modal de Tela Cheia (Lightbox) ao clicar na foto */}
+            {isFullScreen && photos.length > 0 && (
                 <div
+                    className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn"
                     onClick={() => setIsFullScreen(false)}
-                    className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-lg flex items-center justify-center p-4 sm:p-8 animate-fadeIn cursor-zoom-out"
                 >
-                    {/* Botão Fechar Tela Cheia */}
                     <button
                         onClick={() => setIsFullScreen(false)}
                         type="button"
-                        className="absolute top-6 right-6 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition cursor-pointer z-10 backdrop-blur-md shadow-lg"
-                        title="Fechar tela cheia (Esc)"
+                        className="absolute top-6 right-6 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition cursor-pointer z-50 backdrop-blur-sm"
+                        title="Fechar tela cheia"
                     >
                         <FaXmark className="w-6 h-6" />
                     </button>
 
-                    {/* Imagem em tamanho máximo mantendo proporção */}
-                    <div className="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                    <div className="relative max-w-5xl max-h-[90vh] w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
                         <img
-                            src={activePhoto}
-                            alt={pet.name}
-                            className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl border border-white/10"
+                            src={photos[currentPhotoIndex]}
+                            alt={pet.name || "Pet em tela cheia"}
+                            className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl"
                         />
 
-                        {/* Setas de navegação na tela cheia */}
                         {hasMultiplePhotos && (
                             <>
                                 <button
                                     type="button"
                                     onClick={handlePrevPhoto}
-                                    className="absolute -left-5 sm:-left-16 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/30 text-white p-3.5 rounded-full transition cursor-pointer backdrop-blur-md shadow-lg"
-                                    title="Foto anterior"
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition cursor-pointer backdrop-blur-sm"
                                 >
                                     <FaChevronLeft className="w-6 h-6" />
                                 </button>
@@ -231,11 +270,14 @@ export function PetDetailModal({
                                 <button
                                     type="button"
                                     onClick={handleNextPhoto}
-                                    className="absolute -right-5 sm:-right-16 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/30 text-white p-3.5 rounded-full transition cursor-pointer backdrop-blur-md shadow-lg"
-                                    title="Próxima foto"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white p-3 rounded-full transition cursor-pointer backdrop-blur-sm"
                                 >
                                     <FaChevronRight className="w-6 h-6" />
                                 </button>
+
+                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 px-4 py-2 rounded-full text-white text-xs font-semibold backdrop-blur-md">
+                                    Foto {currentPhotoIndex + 1} de {photos.length}
+                                </div>
                             </>
                         )}
                     </div>

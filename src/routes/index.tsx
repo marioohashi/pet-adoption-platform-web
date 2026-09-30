@@ -9,7 +9,7 @@ import { NGOsList } from "../sections/NGOsList"
 import { VetsList } from "../sections/VetList"
 import { LostPets } from "../sections/LostPets"
 
-import { NotFound } from "../pages/NotFound"
+import { NotFound } from "../sections/NotFound"
 
 export function AppRoutes() {
     return (

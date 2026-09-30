@@ -10,18 +10,15 @@ export function Input({ legend, type = "text", className = "", id, ...rest }: Pr
     const [showPassword, setShowPassword] = useState(false);
     const inputId = id || legend?.toLowerCase().replace(/\s+/g, "-");
 
-    // Verifica se o campo é do tipo senha
     const isPassword = type === "password";
-
-    // Alterna o tipo real do input entre "text" e "password"
     const inputType = isPassword ? (showPassword ? "text" : "password") : type;
 
     return (
-        <div className="flex flex-col w-full gap-1.5 group">
+        <div className="flex flex-col w-full gap-1.5 group font-sans">
             {legend && (
                 <label
                     htmlFor={inputId}
-                    className="text-xs font-semibold uppercase tracking-wider text-gray-300 group-focus-within:text-amber-400 transition-colors"
+                    className="text-xs font-semibold text-[#2D2D2D] group-focus-within:text-[#FF7A59] transition-colors"
                 >
                     {legend}
                 </label>
@@ -33,19 +30,20 @@ export function Input({ legend, type = "text", className = "", id, ...rest }: Pr
                     type={inputType}
                     className={`
                         w-full
-                        bg-gray-600/50
-                        border border-gray-500/60
-                        rounded-lg
-                        px-3.5 py-2.5
-                        ${isPassword ? "pr-10" : ""} 
-                        text-sm text-gray-100
-                        placeholder:text-gray-400
-                        hover:border-gray-400
+                        bg-[#F4F4F2]
+                        border border-[#E4E4E1]
+                        rounded-2xl
+                        px-4 py-3.5
+                        ${isPassword ? "pr-12" : ""} 
+                        text-sm text-[#2D2D2D]
+                        placeholder:text-[#6B7280]/60
+                        hover:border-[#6B7280]/40
                         focus:outline-none
-                        focus:border-amber-500
-                        focus:ring-2 focus:ring-amber-500/20
+                        focus:border-[#FF7A59]
+                        focus:ring-2 focus:ring-[#FF7A59]/20
+                        focus:bg-white
                         disabled:opacity-50 disabled:cursor-not-allowed
-                        transition-all duration-200
+                        transition-all duration-200 shadow-xs
                         ${className}
                     `}
                     {...rest}
@@ -55,8 +53,8 @@ export function Input({ legend, type = "text", className = "", id, ...rest }: Pr
                     <button
                         type="button"
                         onClick={() => setShowPassword((prev) => !prev)}
-                        tabIndex={-1} // Evita que o botão intercepte a navegação via tecla TAB
-                        className="absolute right-3 text-gray-400 hover:text-gray-200 focus:outline-none p-1 transition-colors cursor-pointer"
+                        tabIndex={-1}
+                        className="absolute right-4 text-[#6B7280] hover:text-[#2D2D2D] focus:outline-none p-1 transition-colors cursor-pointer"
                         aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                     >
                         {showPassword ? (
