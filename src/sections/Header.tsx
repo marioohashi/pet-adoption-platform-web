@@ -47,11 +47,6 @@ export function Header() {
     setIsPetModalOpen(true);
   }
 
-  function handlePetSubmit(formData: any) {
-    console.log("Dados do pet enviados:", formData);
-    // Aqui você faz a chamada para a sua API (POST /pets ou equivalente)
-  }
-
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center gap-2 px-3 py-2 rounded-xl text-xs lg:text-sm font-medium transition-all duration-200 whitespace-nowrap ${isActive
       ? "bg-[#FF7A59]/10 text-[#FF7A59] font-semibold border border-[#FF7A59]/20 shadow-xs"
@@ -281,7 +276,6 @@ export function Header() {
       <PetFormModal
         isOpen={isPetModalOpen}
         onClose={() => setIsPetModalOpen(false)}
-        onSubmit={handlePetSubmit}
       />
     </>
   );

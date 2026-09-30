@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { getMyPets, deletePet, updatePet } from "../services/petService";
+import { getMyPets, deletePet } from "../services/petService";
 import { PetListCard } from "./PetListCard";
 import { PetDetailModal } from "../modals/PetDetailModal";
 import { ConfirmModal } from "../modals/ConfirmModal";
@@ -36,15 +36,15 @@ export function MyPetsList() {
         },
     });
 
-    const updateStatusMutation = useMutation({
-        mutationFn: async ({ id, newStatus }: { id: string; newStatus: string }) => {
-            return updatePet(id, { status: newStatus });
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["my-pets"] });
-            queryClient.invalidateQueries({ queryKey: ["pets"] });
-        },
-    });
+    // const updateStatusMutation = useMutation({
+    //     mutationFn: async ({ id, newStatus }: { id: string; newStatus: string }) => {
+    //         return updatePet(id, { status: newStatus });
+    //     },
+    //     onSuccess: () => {
+    //         queryClient.invalidateQueries({ queryKey: ["my-pets"] });
+    //         queryClient.invalidateQueries({ queryKey: ["pets"] });
+    //     },
+    // });
 
     function handleDeleteClick(pet: Pet) {
         setPetToDelete(pet);
@@ -187,7 +187,7 @@ export function MyPetsList() {
             <PetDetailModal
                 pet={selectedPet}
                 onClose={() => setSelectedPet(null)}
-                showContactButton={false}
+                isOpen={Boolean(selectedPet)}
             />
 
             {/* Modal para Criação de Novo Pet */}

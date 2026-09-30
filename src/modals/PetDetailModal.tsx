@@ -19,12 +19,11 @@ export function PetDetailModal({ pet, isOpen, onClose }: PetDetailModalProps) {
     // Normaliza todas as fotos possíveis do pet em um array único
     const photos =
         pet.photos && pet.photos.length > 0 ? pet.photos :
-            pet.photo ? [pet.photo] :
-                pet.imageUrl ? [pet.imageUrl] : [];
+            pet.photo ? [pet.photo] : [];
 
     const hasMultiplePhotos = photos.length > 1;
 
-    const isOccurrence = pet.type === "lost" || pet.type === "found" || Boolean(pet.date || pet.location);
+    const isOccurrence = pet.type === "lost" || pet.type === "found" || Boolean(pet.date || pet.city);
     const formattedAge = pet.age ? formatAge(pet.age) : null;
     const cleanPhone = (pet.phone || "").replace(/\D/g, "");
 
@@ -160,7 +159,7 @@ export function PetDetailModal({ pet, isOpen, onClose }: PetDetailModalProps) {
                             <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mt-1">
                                 {pet.breed || "Raça não informada"}
                                 {formattedAge ? ` • ${formattedAge}` : ""}
-                                {pet.sex ? ` • ${pet.sex === 'male' ? 'Macho' : 'Fêmea'}` : ""}
+                                {pet.gender ? ` • ${pet.gender === 'male' ? 'Macho' : 'Fêmea'}` : ""}
                             </p>
                         </div>
 
@@ -176,14 +175,14 @@ export function PetDetailModal({ pet, isOpen, onClose }: PetDetailModalProps) {
 
                         {/* Informações Específicas (Localização e Data) */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                            {(pet.location || pet.city) && (
+                            {(pet.state || pet.city) && (
                                 <div className="flex items-center gap-3 bg-[#F4F4F2] border border-[#E4E4E1] p-3.5 rounded-2xl text-xs text-[#2D2D2D]">
                                     <div className="p-2.5 bg-[#FF7A59]/10 text-[#FF7A59] rounded-xl shrink-0">
                                         <FaLocationDot className="w-4 h-4" />
                                     </div>
                                     <div className="overflow-hidden">
                                         <p className="text-[10px] text-[#6B7280] font-semibold uppercase">Localização</p>
-                                        <span className="font-medium truncate block">{pet.location || `${pet.city}${pet.state ? `, ${pet.state}` : ''}`}</span>
+                                        <span className="font-medium truncate block">{pet.state || `${pet.city}${pet.state ? `, ${pet.state}` : ''}`}</span>
                                     </div>
                                 </div>
                             )}

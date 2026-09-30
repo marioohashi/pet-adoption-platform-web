@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaPhone, FaGlobe, FaLocationDot, FaXmark, FaPlus, FaPenToSquare, FaTrash, FaBuilding } from "react-icons/fa6";
+import { FaPhone, FaGlobe, FaLocationDot, FaXmark, FaPlus, FaPenToSquare, FaTrash } from "react-icons/fa6";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../services/api";
 import { useAuth } from "../hooks/useAuth";

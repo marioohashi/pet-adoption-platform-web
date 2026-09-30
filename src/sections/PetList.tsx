@@ -229,7 +229,6 @@ export function PetList() {
           {pets.map((pet: Pet) => (
             <PetListCard
               key={pet.id}
-              pet5={pet}
               pet={pet}
               onClick={() => setSelectedPet(pet)}
             />

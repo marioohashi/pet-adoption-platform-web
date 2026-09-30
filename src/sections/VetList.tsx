@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaPhone, FaLocationDot, FaClock, FaXmark, FaPlus, FaPenToSquare, FaTrash, FaBuilding } from "react-icons/fa6";
+import { FaPhone, FaLocationDot, FaClock, FaXmark, FaPlus, FaPenToSquare, FaTrash } from "react-icons/fa6";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../services/api";
 import { useAuth } from "../hooks/useAuth";
@@ -282,7 +282,7 @@ export function VetsList() {
             <CreateVetModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                initialData={vetToEdit}
+                initialData={vetToEdit ? { ...vetToEdit, crmv: vetToEdit.crmv ?? "" } : null}
             />
 
             <ConfirmModal

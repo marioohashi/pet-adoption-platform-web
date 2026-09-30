@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
-import { FaLocationDot, FaCalendarDay, FaTriangleExclamation, FaMagnifyingGlass, FaPlus, FaWhatsapp, FaSliders, FaXmark, FaPaw, FaChevronLeft, FaChevronRight } from "react-icons/fa6";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { FaLocationDot, FaCalendarDay, FaTriangleExclamation, FaMagnifyingGlass, FaWhatsapp, FaSliders, FaXmark, FaPaw, FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 import { getPets } from "../services/petService";
 import { Pagination } from "../components/Pagination";
 import { PetDetailModal } from "../modals/PetDetailModal";

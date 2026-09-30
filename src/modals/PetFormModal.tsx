@@ -7,7 +7,6 @@ import { ZodError, z } from "zod";
 
 import { api } from "../services/api";
 import { uploadToCloudinary } from "../services/cloudinary";
-import { useAuth } from "../hooks/useAuth";
 import { Input } from "../components/Input";
 import { Button } from "../components/Button";
 import { ConfirmModal } from "./ConfirmModal";
@@ -80,8 +79,6 @@ const selectClasses = `
 
 export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps) {
     const queryClient = useQueryClient();
-    const { user } = useAuth();
-
     const [name, setName] = useState("");
     const [type, setType] = useState<AdObjective>("adoption");
     const [species, setSpecies] = useState<"dog" | "cat" | "other">("dog");
@@ -94,7 +91,6 @@ export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps
     const [state, setState] = useState("PR");
     const [description, setDescription] = useState("");
 
-    // Novos estados para contato
     const [contactName, setContactName] = useState("");
     const [phone, setPhone] = useState("");
 
@@ -123,13 +119,13 @@ export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps
                 setMonths(String(totalMonths % 12));
 
                 setSize(initialData.size || "");
-                setGender(initialData.gender || initialData.sex || "");
+                setGender(initialData.gender || "");
                 setCity(initialData.city || "Curitiba");
                 setState(initialData.state || "PR");
                 setDescription(initialData.description || "");
 
-                setContactName(initialData.contactName || user?.name || "");
-                setPhone(initialData.phone || user?.phone || "");
+                setContactName(initialData.contactName || "");
+                setPhone(initialData.phone || "");
 
                 const initialPhotos = initialData.photos && initialData.photos.length > 0
                     ? initialData.photos
@@ -139,11 +135,11 @@ export function PetFormModal({ isOpen, onClose, initialData }: PetFormModalProps
                 setSelectedFiles([]);
             } else {
                 resetForm();
-                setContactName(user?.name || "");
-                setPhone(user?.phone || "");
+                setContactName("");
+                setPhone("");
             }
         }
-    }, [isOpen, initialData, user]);
+    }, [isOpen, initialData]);
 
     if (!isOpen) return null;
 
