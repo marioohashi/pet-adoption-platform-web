@@ -12,7 +12,6 @@ type TabFilter = "todos" | "adocao" | "perdido" | "achado";
 export function MyPetsList() {
     const queryClient = useQueryClient();
 
-    // Estados para controle dos modais
     const [editingPet, setEditingPet] = useState<Pet | null>(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [petToDelete, setPetToDelete] = useState<Pet | null>(null);

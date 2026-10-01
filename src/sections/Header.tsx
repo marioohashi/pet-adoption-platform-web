@@ -12,19 +12,18 @@ import {
   FaBars,
   FaXmark,
   FaPlus,
+  FaShieldHalved,
 } from "react-icons/fa6";
 import { useAuth } from "../hooks/useAuth";
 import { AuthModal } from "../modals/AuthModal";
 import { PetFormModal } from "../modals/PetFormModal";
 
-
-
 export function Header() {
-  const { session, remove } = useAuth();
+  const { session, remove, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isPetModalOpen, setIsPetModalOpen] = useState(false); // Estado para controlar o modal de cadastro/edição de pets
+  const [isPetModalOpen, setIsPetModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<"signin" | "signup">("signin");
 
@@ -44,6 +43,11 @@ export function Header() {
 
   function handleOpenPetModal() {
     setIsMobileMenuOpen(false);
+
+    if (!isAuthenticated) {
+      openModal("signin");
+      return;
+    }
     setIsPetModalOpen(true);
   }
 
@@ -91,7 +95,7 @@ export function Header() {
 
             {/* Ações do Utilizador (Lado Direito - Desktop) */}
             <div className="hidden lg:flex items-center gap-2 shrink-0">
-              {/* Botão de Cadastrar Pet - Aciona o Modal */}
+              {/* Botão de Cadastrar Pet - Valida autenticação */}
               <button
                 onClick={handleOpenPetModal}
                 className="flex items-center gap-1.5 bg-[#FF7A59] hover:bg-[#e0694a] text-white font-semibold px-3.5 py-2.5 rounded-2xl text-xs transition-all shadow-sm hover:shadow-md cursor-pointer whitespace-nowrap"
@@ -106,6 +110,14 @@ export function Header() {
                     <FaPaw className="w-3.5 h-3.5" />
                     <span>Meus Pets</span>
                   </NavLink>
+
+                  {/* Botão Admin Desktop (Visível apenas se autenticado E for admin) */}
+                  {isAuthenticated && isAdmin && (
+                    <NavLink to="/admin" className={navLinkClass}>
+                      <FaShieldHalved className="w-3.5 h-3.5" />
+                      <span>Admin</span>
+                    </NavLink>
+                  )}
 
                   <div className="flex items-center gap-1.5 pl-2 border-l border-[#E4E4E1]">
                     <NavLink
@@ -204,6 +216,24 @@ export function Header() {
                     </NavLink>
                   </div>
                 )}
+
+                {/* Botão Admin Mobile (Visível apenas se autenticado E for admin) */}
+                {isAuthenticated && isAdmin && (
+                  <div onClick={() => setIsMobileMenuOpen(false)}>
+                    <NavLink
+                      to="/admin"
+                      className={({ isActive }) =>
+                        `w-full flex justify-center items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all  ${isActive
+                          ? "bg-[#FF7A59]/10 text-[#FF7A59] border border-[#FF7A59]/20"
+                          : "bg-[#F4F4F2] text-[#2D2D2D] hover:bg-[#E4E4E1]"
+                        }`
+                      }
+                    >
+                      <FaShieldHalved className="w-4 h-4 text-[#FF7A59]" />
+                      <span>Admin</span>
+                    </NavLink>
+                  </div>
+                )}
               </div>
 
               <div onClick={() => setIsMobileMenuOpen(false)}>
@@ -236,7 +266,7 @@ export function Header() {
               {isAuthenticated ? (
                 <div className="flex items-center justify-between pt-2">
                   <NavLink
-                    to="/settings"
+                    to="/minha-conta"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="flex items-center gap-2 text-xs font-medium text-[#6B7280] hover:text-[#FF7A59]"
                   >
