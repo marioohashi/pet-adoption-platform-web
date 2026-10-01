@@ -31,8 +31,9 @@ const ngoSchema = z.object({
 
 const vetSchema = z.object({
     name: z.string().trim().min(2, "Informe o nome do veterinário"),
-    type: z.enum(["clinic", "veterinarian"], { errorMap: () => ({ message: "Selecione o tipo de parceiro" }) }),
-    city: z.string().trim().min(2, "Informe a cidade"),
+    type: z.enum(["clinic", "veterinarian"], {
+        message: "Selecione o tipo de parceiro",
+    }), city: z.string().trim().min(2, "Informe a cidade"),
     state: z.string().trim().min(2, "Informe o estado (ex: PR)"),
     phone: z.string().trim().min(5, "Informe um telefone válido"),
     address: z.string().trim().min(3, "Informe o endereço"),
