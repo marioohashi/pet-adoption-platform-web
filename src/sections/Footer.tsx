@@ -73,7 +73,7 @@ export function Footer() {
             </p>
             <div className="flex items-center gap-3 pt-1">
               <a
-                href="https://www.linkedin.com/in/mario-ohashi"
+                href="https://www.linkedin.com/in/marioohashi"
                 target="_blank"
                 rel="noopener noreferrer"
                 title="LinkedIn"
@@ -82,7 +82,7 @@ export function Footer() {
                 <FaLinkedin className="w-4 h-4" />
               </a>
               <a
-                href="https://github.com"
+                href="https://github.com/marioohashi"
                 target="_blank"
                 rel="noopener noreferrer"
                 title="GitHub"
@@ -91,7 +91,7 @@ export function Footer() {
                 <FaGithub className="w-4 h-4" />
               </a>
               <a
-                href="mailto:contato@adote2pets.com"
+                href="mailto:mario.ohashi@gmail.com"
                 title="Contato"
                 className="p-2.5 bg-[#FAFAF8] hover:bg-[#FF7A59] hover:text-white text-[#6B7280] rounded-xl border border-[#E4E4E1] transition-all cursor-pointer shadow-xs"
               >

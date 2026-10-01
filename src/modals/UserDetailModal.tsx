@@ -31,7 +31,6 @@ export function UserDetailModal({ isOpen, onClose, user }: UserDetailModalProps)
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn font-sans">
             <div className="bg-[#FAFAF8] border border-[#E4E4E1] rounded-3xl w-full max-w-md overflow-hidden shadow-2xl relative text-[#2D2D2D] flex flex-col max-h-[90vh]">
 
-                {/* Botão Fechar */}
                 <button
                     onClick={onClose}
                     type="button"
