@@ -32,7 +32,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(data)
     }
 
-    // ➡️️ ADICIONE ESTA FUNÇÃO:
     function updateSession(updatedUser: UserAPIResponse["user"]) {
         if (!session) return
 

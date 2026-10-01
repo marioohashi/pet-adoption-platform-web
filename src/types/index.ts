@@ -38,6 +38,11 @@ export const PetSex = {
 } as const;
 export type PetSex = (typeof PetSex)[keyof typeof PetSex];
 
+export const VetType = {
+  CLINIC: "clinic",
+  VETERINARIAN: "veterinarian"
+} as const;
+export type VetType = (typeof VetType)[keyof typeof VetType];
 
 export interface User {
   id: string;
@@ -58,21 +63,41 @@ export interface AuthResponse {
   token: string;
 }
 
-export interface Ngo {
+export interface NGO {
   id: string;
   name: string;
-  description?: string | null;
-  city: string;
-  state: string;
-  phone: string;
+  image?: string | null;
+  city?: string;
+  state?: string;
+  phone?: string;
+  website?: string;
   pixKey?: string | null;
-  logo?: string | null;
+  description?: string | null;
   userId: string;
   user?: User;
   createdAt: string;
   updatedAt: string;
 }
 
+export interface VetPartner {
+  id: string;
+  name: string;
+  type?: VetType | string | null;
+  image?: string | null;
+  city?: string | null;
+  state?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  hours?: string | null;
+  specialty?: string | null;
+  crmv?: string | null;
+  website?: string | null;
+  description?: string | null;
+  userId: string;
+  user?: User;
+  createdAt: string;
+  updatedAt: string;
+}
 export interface Pet {
   id: string;
   name: string;
@@ -126,7 +151,7 @@ export interface Pagination {
 
 export interface PetsResponse {
   pets?: Pet[];
-  animals?: Pet[]; // Suporte temporário a legado caso alguma rota antiga retorne "animals"
+  animals?: Pet[];
   pagination: Pagination;
 }
 

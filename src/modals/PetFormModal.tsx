@@ -12,6 +12,8 @@ import { Button } from "../components/Button";
 import { ConfirmModal } from "./ConfirmModal";
 import { useEscapeKey } from "../hooks/useEscapeKey";
 import type { Pet } from "../types/index";
+import { LocationAutocomplete } from "../components/LocationAutocomplete";
+import { formatPhone } from "../utils/formatPhone"
 
 type AdObjective = "adoption" | "lost" | "found";
 
@@ -551,28 +553,50 @@ export function PetFormModal({ isOpen, onClose, initialData, onDelete }: PetForm
                             </div>
                         </div>
 
-                        {/* Localização (Cidade e Estado) */}
-                        <div className="grid grid-cols-3 gap-3">
-                            <div className="col-span-2">
-                                <Input
-                                    required
-                                    legend="Cidade"
-                                    placeholder="Ex: Curitiba"
-                                    value={city}
-                                    onChange={(e) => setCity(e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <Input
-                                    required
-                                    legend="Estado (UF)"
-                                    placeholder="PR"
-                                    value={state}
-                                    onChange={(e) => setState(e.target.value.toUpperCase())}
-                                    maxLength={2}
-                                />
-                            </div>
+
+                        {/* Contato (Nome e Telefone) */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                            <Input
+                                required
+                                legend="Nome para Contato"
+                                placeholder="Seu nome ou responsável"
+                                value={contactName}
+                                onChange={(e) => setContactName(e.target.value)}
+                            />
+                            <Input
+                                required
+                                legend="Telefone / WhatsApp"
+                                placeholder="(41) 99999-9999"
+                                value={phone}
+                                onChange={(e) => setPhone(formatPhone(e.target.value))}
+
+                            />
                         </div>
+                        {/* Localização (Cidade e Estado) */}
+                        <div className="grid grid-cols-1 gap-3">
+                            <LocationAutocomplete
+                                city={city}
+                                state={state}
+                                onChange={(newCity, newState) => {
+                                    setCity(newCity);
+                                    setState(newState);
+                                }}
+                            />
+                        </div>
+                        {/* Descrição */}
+                        <div>
+                            <label className="block text-xs font-semibold text-[#2D2D2D] mb-1.5">
+                                História / Informações sobre o Pet
+                            </label>
+                            <textarea
+                                rows={3}
+                                placeholder="Conte sobre a personalidade do pet, se é castrado, vacinado ou se dá bem com outros animais..."
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                className="w-full bg-[#F4F4F2] border border-[#E4E4E1] rounded-2xl p-3 text-sm text-[#2D2D2D] placeholder-[#6B7280] focus:outline-none focus:border-[#FF7A59] transition resize-none shadow-xs"
+                            />
+                        </div>
+
 
                         {/* Campos Dinâmicos: Data e Recompensa */}
                         {(type === "lost" || type === "found") && (
@@ -593,46 +617,16 @@ export function PetFormModal({ isOpen, onClose, initialData, onDelete }: PetForm
                                     <div>
                                         <Input
                                             legend="Recompensa (Opcional)"
-                                            placeholder="Ex: R$ 300,00"
+                                            placeholder="Ex: R$100,00"
                                             value={reward}
                                             onChange={(e) => setReward(e.target.value)}
+                                            isCurrency
                                         />
                                     </div>
                                 )}
                             </div>
                         )}
 
-                        {/* Contato (Nome e Telefone) */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-[#E4E4E1]">
-                            <Input
-                                required
-                                legend="Nome para Contato"
-                                placeholder="Seu nome ou responsável"
-                                value={contactName}
-                                onChange={(e) => setContactName(e.target.value)}
-                            />
-                            <Input
-                                required
-                                legend="Telefone / WhatsApp"
-                                placeholder="(41) 99999-9999"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                            />
-                        </div>
-
-                        {/* Descrição */}
-                        <div>
-                            <label className="block text-xs font-semibold text-[#2D2D2D] mb-1.5">
-                                História / Informações sobre o Pet
-                            </label>
-                            <textarea
-                                rows={3}
-                                placeholder="Conte sobre a personalidade do pet, se é castrado, vacinado ou se dá bem com outros animais..."
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                className="w-full bg-[#F4F4F2] border border-[#E4E4E1] rounded-2xl p-3 text-sm text-[#2D2D2D] placeholder-[#6B7280] focus:outline-none focus:border-[#FF7A59] transition resize-none shadow-xs"
-                            />
-                        </div>
 
                         {/* Botões de Ação na Base (Salvar e Excluir se estiver editando) */}
                         <div className="pt-2 flex items-center gap-3">

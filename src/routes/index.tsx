@@ -11,6 +11,7 @@ import { LostPets } from "../sections/LostPets"
 import { Settings } from "../sections/Settings"
 
 import { NotFound } from "../sections/NotFound"
+import { Admin } from "../sections/Admin";
 
 export function AppRoutes() {
     return (
@@ -27,6 +28,7 @@ export function AppRoutes() {
                     <Route element={<ProtectedRoute />}>
                         <Route path="/meus-pets" element={<MyPetsList />} />
                         <Route path="/minha-conta" element={<Settings />} />
+                        <Route path="/admin" element={<Admin />} />
                     </Route>
 
                 </Route>
